@@ -26,6 +26,7 @@ export const bootstrap = async () => {
   const app: Express = express();
   await connectDB();
   app.use(express.json(), cors(), helmet(), limiter,globalSuccessHandler);
+  
   app.get("/", (req: Request, res: Response) => {
     return res.success({ message: "Hello, World!", statusCode: 200 });
   });
