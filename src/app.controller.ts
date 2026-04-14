@@ -12,7 +12,7 @@ import {
 } from "./middlewares/Error/ErrorHandler.middleware";
 import { globalSuccessHandler } from "./middlewares/Success/SucessHandler.middleware";
 // rate
-const lmiter: RateLimitRequestHandler = rateLimit({
+const limiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 20,
   message: {
@@ -25,7 +25,7 @@ export const bootstrap = async () => {
   const port: number | string = PORT;
   const app: Express = express();
   await connectDB();
-  app.use(express.json(), cors(), helmet(), lmiter,globalSuccessHandler);
+  app.use(express.json(), cors(), helmet(), limiter,globalSuccessHandler);
   app.get("/", (req: Request, res: Response) => {
     return res.success({ message: "Hello, World!", statusCode: 200 });
   });
