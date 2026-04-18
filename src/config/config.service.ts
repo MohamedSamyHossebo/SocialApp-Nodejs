@@ -13,3 +13,5 @@ if (!process.env.MONGO_URI) {
     throw new Error("Missing required environment variable: MONGO_URI");
 }
 export const MONGO_URI = process.env.MONGO_URI as string;
+
+export const WhiteList = process.env.WHITE_LIST as string;
