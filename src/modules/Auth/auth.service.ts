@@ -1,9 +1,20 @@
 import { Request, Response } from "express";
+import { SignUpDTO } from "./auth.dto";
 
 class AuthenticationService {
     constructor() { }
     signup = (req: Request, res: Response): Response => {
-        return res.status(200).json({ message: "Signup successful" });
+        const { firstName, lastName, email, password, }: SignUpDTO = req.body;
+        console.log(firstName, lastName, email, password);
+        return res.success({
+            statusCode: 201,
+            message: "Signup successful",
+            data: {
+                firstName,
+                lastName,
+                email,
+            },
+        });
     }
 
 }

@@ -5,7 +5,7 @@ import { ISuccessResponse } from "./Success.model";
 declare global {
   namespace Express {
     interface Response {
-      success: (payload: ISuccessResponse) => void;
+      success: (payload: ISuccessResponse) => any;
     }
   }
 }
@@ -17,7 +17,7 @@ export const globalSuccessHandler = (
   next: NextFunction,
 ) => {
   res.success = ({ statusCode = 200, message, data }: ISuccessResponse) => {
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
       success: true,
       message,
       data: data ?? {},

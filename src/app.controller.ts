@@ -18,6 +18,7 @@ export const bootstrap = async () => {
   const app: Express = express();
   await connectDB();
   app.use(express.json(), cors(corsOptions), helmet(), rateLimiter);
+  app.use(globalSuccessHandler);
   
   app.get("/", (req: Request, res: Response) => {
     return res.success({ message: "Hello, World!", statusCode: 200 });
@@ -28,7 +29,6 @@ export const bootstrap = async () => {
   app.use("/posts", postsRouter);
   app.use("/user", userRouter);
 
-  app.use(globalSuccessHandler);
   app.use(globalErrorHandler);
   app.use("*dummy", (req: Request, res: Response): Response => {
     throw new NotFoundException("Route not found", {});

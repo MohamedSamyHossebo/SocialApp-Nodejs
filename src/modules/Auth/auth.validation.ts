@@ -1,5 +1,39 @@
-import zod from "zod";
+import { z } from "zod";
+import { generalFields } from "../../middlewares/Auth/validation.middleware";
 
-export const authValidation = {
-    
+
+export const loginSchema={
+    body:z.strictObject({
+        email:generalFields.email,
+        password:generalFields.password
+    })
+
+}
+export const signUpSchema = {
+    body:loginSchema.body
+    .extend({
+        firstName:generalFields.firstName,
+        lastName:generalFields.lastName,
+        confirmPassword:generalFields.confirmPassword,
+        gender:generalFields.gender.optional(),
+        birthDate:generalFields.birthDate,
+        phoneNumber:generalFields.phoneNumber,
+    })
+    .superRefine((data,ctx)=>{
+        if(data.password!==data.confirmPassword){
+            ctx.addIssue({
+                code:"custom",
+                path:["confirmPassword"],
+                message:"passwords do not match"
+            })
+        }
+        // if(data.userName.split(" ").length!==2){
+        //     ctx.addIssue({
+        //         code:"custom",
+        //         path:["userName"],
+        //         message:"userName must be two words"
+        //     })
+        // }
+    })
+  
 }
