@@ -13,22 +13,22 @@ export class AppError extends Error {
   }
 }
 export class BadRequestException extends AppError {
-  constructor(message: string, options: ErrorOptions) {
+  constructor(message: string, options?: ErrorOptions) {
     super(message, options, 400);
   }
 }
 export class UnAuthorizedException extends AppError {
-  constructor(message: string, options: ErrorOptions) {
+  constructor(message: string, options?: ErrorOptions) {
     super(message, options, 401);
   }
 }
 export class ForbiddenException extends AppError {
-  constructor(message: string, options: ErrorOptions) {
+  constructor(message: string, options?: ErrorOptions) {
     super(message, options, 403);
   }
 }
 export class NotFoundException extends AppError {
-  constructor(message: string, options: ErrorOptions) {
+  constructor(message: string, options?: ErrorOptions) {
     super(message, options, 404);
   }
 }
@@ -38,7 +38,7 @@ export class ConflictException extends AppError {
   }
 }
 export class InternalServerErrorException extends AppError {
-  constructor(message: string, options: ErrorOptions) {
+  constructor(message: string, options?: ErrorOptions) {
     super(message, options, 500);
   }
 }

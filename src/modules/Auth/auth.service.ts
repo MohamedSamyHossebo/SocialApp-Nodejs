@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
-import { SignUpDTO } from "./auth.dto";
+import { ConfirmEmailDTO, SignUpDTO } from "./auth.dto";
 import { UserModel } from "../../DB/models/user/User.model";
 import { UserRepository } from "../../DB/repositories/user.repository";
-import { ConflictException } from "../../middlewares/Error/ErrorHandler.middleware";
-import { generateHash } from "../../utils/security/hash";
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from "../../middlewares/Error/ErrorHandler.middleware";
+import { compareHash, generateHash } from "../../utils/security/hash";
 import { encrypt } from "../../utils/security/encryption";
 import { generateOtp } from "../../utils/security/otp.security";
 import { emailEmitter } from "../../utils/events/email.events";
@@ -42,6 +46,33 @@ class AuthenticationService {
       data: {
         user,
       },
+    });
+  };
+  confirmEmail = async (req: Request, res: Response): Promise<Response> => {
+    const { email, otp }: ConfirmEmailDTO = req.body;
+    const user = await this._userModel.findOne({
+      filter: {
+        email,
+        confirmEmailOTP: { $exists: true },
+        confirmEmail: { $exists: false },
+      },
+    });
+    if (!user)
+      throw new NotFoundException("User Not found or Already Confirmed");
+    if (!compareHash(otp, user.confirmEmailOTP as string))
+      throw new BadRequestException("Invalid OTP");
+    await this._userModel.updateOne({
+      filter: { email },
+      update: {
+        confirmEmail: new Date(),
+        $unset: {
+          confirmEmailOTP: true,
+        },
+      },
+    });
+    return res.success({
+      statusCode: 200,
+      message: "Your Email Successfully Confirmed",
     });
   };
 }
