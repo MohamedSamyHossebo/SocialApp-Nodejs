@@ -16,7 +16,7 @@ export const sendEmail = async (data: Mail.Options): Promise<any> => {
   });
   const info = await transporter.sendMail({
     ...data,
-    from: `"Social App" <${EMAIL_USER as string}>`,
+    from: `"TypeScript Social App" <${EMAIL_USER as string}>`,
   });
   console.log(info.messageId);
 };
@@ -26,7 +26,7 @@ export const emailSubject = {
   forgetPassword: "Forget Password",
   resetPassword: "Your Password Has Been Reset",
   changePassword: "Your Password Has Been Changed",
-  welcome: "Welcome to Saraha App",
+  welcome: "Welcome to TypeScript Social App",
   contactUs: "Contact Us",
 };
 
@@ -35,7 +35,7 @@ export const emailHTML = {
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Confirm Your Email</h1>
-        <p style="color: #4a5568; font-size: 16px; margin-top: 12px;">Welcome to Saraha! Please use the verification code below to confirm your account.</p>
+        <p style="color: #4a5568; font-size: 16px; margin-top: 12px;">Welcome to TypeScript Social App! Please use the verification code below to confirm your account.</p>
       </div>
       
       <div style="margin: 32px 0;">
@@ -51,7 +51,7 @@ export const emailHTML = {
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Confirm Your Email Success</h1>
-        <p style="color: #4a5568; font-size: 16px; margin-top: 12px;">Welcome to Saraha! Your email has been confirmed successfully.</p>
+        <p style="color: #4a5568; font-size: 16px; margin-top: 12px;">Welcome to TypeScript Social App! Your email has been confirmed successfully.</p>
       </div>
       
       <div style="margin: 32px 0;">
@@ -113,15 +113,15 @@ export const emailHTML = {
   `,
   welcome: (name: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-      <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700; text-align: center;">Welcome to Saraha!</h1>
+      <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700; text-align: center;">Welcome to TypeScript Social App!</h1>
       <div style="margin-top: 24px; color: #4a5568; line-height: 1.6;">
         <p style="font-size: 18px; font-weight: 600; color: #1a1a1a;">Hello ${name},</p>
-        <p>Thank you for joining Saraha App. We're excited to have you on board!</p>
+        <p>Thank you for joining TypeScript Social App. We're excited to have you on board!</p>
         <p>You can now log in and start sharing or receiving honest feedback from your friends and colleagues.</p>
         
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e1e4e8; font-size: 14px; color: #718096;">
           <p style="margin: 0;">Best regards,</p>
-          <p style="margin: 4px 0 0 0; font-weight: 600; color: #1a1a1a;">The Saraha App Team</p>
+          <p style="margin: 4px 0 0 0; font-weight: 600; color: #1a1a1a;">The TypeScript Social App Team</p>
         </div>
       </div>
     </div>
@@ -151,7 +151,7 @@ export const emailText = {
   confirmEmail: (otp: string) => `
     Confirm Your Email
     
-    Welcome to Saraha! Please use the verification code below to confirm your account:
+    Welcome to TypeScript Social App! Please use the verification code below to confirm your account:
     
     ${otp}
     
@@ -160,7 +160,7 @@ export const emailText = {
   confirmEmailSuccess: (name: string) => `
     Confirm Your Email Success
     
-    Welcome to Saraha! Your email has been confirmed successfully.
+    Welcome to TypeScript Social App! Your email has been confirmed successfully.
     
     ${name}
     
@@ -192,12 +192,12 @@ export const emailText = {
     If you didn't request this, please contact the support team.
   `,
   welcome: (name: string) => `
-    Welcome to Saraha App
+    Welcome to TypeScript Social App
     Hello ${name},
-    Thank you for joining Saraha App. We're excited to have you on board!
+    Thank you for joining TypeScript Social App. We're excited to have you on board!
     You can now log in and start using our services.
     Best regards,
-    The Saraha App Team
+    The TypeScript Social App Team
   `,
   contactUs: (name: string, email: string, message: string) => `
     Contact Us
