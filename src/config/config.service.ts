@@ -18,3 +18,6 @@ export const WhiteList = process.env.WHITE_LIST as string;
 
 export const SALT= process.env.SALT as string
 export const ENC_KEY=process.env.ENC_KEY as string
+
+export const EMAIL_USER = process.env.EMAIL_USER;
+export const EMAIL_PASS = process.env.EMAIL_PASS;
