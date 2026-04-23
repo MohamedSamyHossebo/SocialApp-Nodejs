@@ -1,53 +1,82 @@
-import mongoose from "mongoose";
-import { UserGender, UserRole } from "./User.enums";
-const UserSchema = new mongoose.Schema(
+import mongoose, {model, Schema} from "mongoose";
+import { UserGender, UserRole } from "../../../utils/enums/User.enums";
+
+export interface IUser {
+  firstName:string;
+  lastName:string;
+  userName?:string;
+  email:string;
+  confirmEmailOTP?:string;
+  confirmEmail?:Date;
+
+  password:string;
+  resetPasswordOTP?:string;
+
+  phoneNumber?:string;
+  address?:string;
+
+  gender:UserGender;
+  role:UserRole;
+
+  createdAt:Date;
+  updatedAt?:Date;
+}
+
+
+export const UserSchema = new Schema <IUser>(
   {
-    firstName: {
-      required: [true, "First name is required"],
-      minLength: [2, "First name must be at least 2 characters"],
-      maxLength: [25, "First name must be less than 25 characters"],
-      trim: true,
-      type: String,
+    firstName:{
+      type:String,
+      required:true,
+      trim:true,
+      minLength:2,
+      maxLength:25,
     },
-    lastName: {
-      required: [true, "Last name is required"],
-      minLength: [2, "Last name must be at least 2 characters"],
-      maxLength: [25, "Last name must be less than 25 characters"],
-      trim: true,
-      type: String,
+        lastName:{
+      type:String,
+      required:true,
+      trim:true,
+      minLength:2,
+      maxLength:25,
     },
-    email: {
-      type: String,
-      required: [true, "Email is required"],
-      unique: true,
-      match: [/\S+@\S+\.\S+/, "Please use a valid email address"],
-      trim: true,
+    email:{
+      type:String,
+      required:true,
+      trim:true,
+      unique:true
     },
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-      minLength: [6, "Password must be at least 6 characters"],
-      maxLength: [25, "Password must be less than 25 characters"],
+    confirmEmailOTP:String,
+    confirmEmail:String,
+    password:{
+      type:String,
+      required:true,
     },
-    gender: {
-      type: String,
-      enum: [UserGender.MALE, UserGender.FEMALE],
-      default: UserGender.MALE,
+    resetPasswordOTP:String,
+    phoneNumber:String,
+    address:String,
+    gender:{
+      type:String,
+      enum:Object.values(UserGender),
+      default:UserGender.MALE
     },
-    profileImage: String,
-    coverImage: [String],
-    role: {
-      type: String,
-      enum: [UserRole.USER, UserRole.ADMIN],
-      default: UserRole.USER,
+    role:{
+      type:String,
+      enum:Object.values(UserRole),
+      default:UserRole.USER
     },
-    confirmEmailOtp: String,
-    forgetPasswordOtp: String,
-    isActive: Boolean,
-    confirmEmail: Date,
-    changeCredentialsAt: Date,
   },
-  { timestamps: true },
+  { timestamps: true,toJSON:{virtuals:true},toObject:{virtuals:true} },
 );
-const User = mongoose.model("User", UserSchema);
-export default User;
+UserSchema.virtual("userName").set(
+  function(value:string){
+  const [firstName,lastName] =value.split(" ") || [];
+  this.set({firstName,lastName})
+  }
+).get(
+  function(){
+    return `${this.firstName} ${this.lastName}`
+  }
+)
+
+export const UserModel=model<IUser>("User",UserSchema);
+
