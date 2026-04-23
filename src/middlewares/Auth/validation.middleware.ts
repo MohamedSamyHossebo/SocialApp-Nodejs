@@ -60,6 +60,9 @@ export const generalFields = {
         gender:z.enum(["MALE","FEMALE"],{
             error:"gender must be MALE or FEMALE"
         }),
+        userName:z.string({error:"userName is required"})
+        .min(3,{message:"userName must be at least 3 characters long"})
+        .max(20,{message:"userName must be at most 20 characters long"}),
         birthDate:z.string(),
         phoneNumber:z.string(),
         email:z.email({error:"email is required"}),

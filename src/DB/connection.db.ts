@@ -11,6 +11,7 @@ const connectDB = async () => {
     mongoose.connection.on("disconnecting", () => console.log("disconnecting"));
     mongoose.connection.on("close", () => console.log("close"));
     await mongoose.connect(MONGO_URI, {
+      dbName:"Social-TS",
       serverSelectionTimeoutMS: 5000,
     });
     mongoose.connection.on("error", (error) => {

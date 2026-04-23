@@ -14,10 +14,9 @@ export const signUpSchema = {
     .extend({
         firstName:generalFields.firstName,
         lastName:generalFields.lastName,
-        confirmPassword:generalFields.confirmPassword,
-        gender:generalFields.gender.optional(),
-        birthDate:generalFields.birthDate,
-        phoneNumber:generalFields.phoneNumber,
+        email:generalFields.email,
+        password:generalFields.password,
+        confirmPassword:generalFields.confirmPassword
     })
     .superRefine((data,ctx)=>{
         if(data.password!==data.confirmPassword){
@@ -27,13 +26,13 @@ export const signUpSchema = {
                 message:"passwords do not match"
             })
         }
-        // if(data.userName.split(" ").length!==2){
-        //     ctx.addIssue({
-        //         code:"custom",
-        //         path:["userName"],
-        //         message:"userName must be two words"
-        //     })
-        // }
+    //     // if(data.userName.split(" ").length!==2){
+    //     //     ctx.addIssue({
+    //     //         code:"custom",
+    //     //         path:["userName"],
+    //     //         message:"userName must be two words"
+    //     //     })
+    //     // }
     })
   
 }

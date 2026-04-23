@@ -5,7 +5,7 @@ import { IError } from "./Error.model";
 export class AppError extends Error {
   constructor(
     message: string,
-    options: ErrorOptions,
+    options?: ErrorOptions,
     public statusCode: number = 400,
   ) {
     super(message, options);
@@ -30,6 +30,11 @@ export class ForbiddenException extends AppError {
 export class NotFoundException extends AppError {
   constructor(message: string, options: ErrorOptions) {
     super(message, options, 404);
+  }
+}
+export class ConflictException extends AppError {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options, 409);
   }
 }
 export class InternalServerErrorException extends AppError {

@@ -1,4 +1,4 @@
-import mongoose, {model, Schema} from "mongoose";
+import mongoose, {HydratedDocument, model, Schema} from "mongoose";
 import { UserGender, UserRole } from "../../../utils/enums/User.enums";
 
 export interface IUser {
@@ -79,4 +79,4 @@ UserSchema.virtual("userName").set(
 )
 
 export const UserModel=model<IUser>("User",UserSchema);
-
+export type HUserDocument=HydratedDocument<IUser>;
