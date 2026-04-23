@@ -12,7 +12,7 @@ export interface IUser {
   password:string;
   resetPasswordOTP?:string;
 
-  phoneNumber?:string;
+  phoneNumber?:string | undefined;
   address?:string;
 
   gender:UserGender;

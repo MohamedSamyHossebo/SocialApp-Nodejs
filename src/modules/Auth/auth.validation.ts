@@ -1,38 +1,36 @@
 import { z } from "zod";
 import { generalFields } from "../../middlewares/Auth/validation.middleware";
 
-
-export const loginSchema={
-    body:z.strictObject({
-        email:generalFields.email,
-        password:generalFields.password
-    })
-
-}
+export const loginSchema = {
+  body: z.strictObject({
+    email: generalFields.email,
+    password: generalFields.password,
+  }),
+};
 export const signUpSchema = {
-    body:loginSchema.body
+  body: loginSchema.body
     .extend({
-        firstName:generalFields.firstName,
-        lastName:generalFields.lastName,
-        email:generalFields.email,
-        password:generalFields.password,
-        confirmPassword:generalFields.confirmPassword
+      firstName: generalFields.firstName,
+      lastName: generalFields.lastName,
+      email: generalFields.email,
+      phoneNumber: generalFields.phoneNumber,
+      password: generalFields.password,
+      confirmPassword: generalFields.confirmPassword,
     })
-    .superRefine((data,ctx)=>{
-        if(data.password!==data.confirmPassword){
-            ctx.addIssue({
-                code:"custom",
-                path:["confirmPassword"],
-                message:"passwords do not match"
-            })
-        }
-    //     // if(data.userName.split(" ").length!==2){
-    //     //     ctx.addIssue({
-    //     //         code:"custom",
-    //     //         path:["userName"],
-    //     //         message:"userName must be two words"
-    //     //     })
-    //     // }
-    })
-  
-}
+    .superRefine((data, ctx) => {
+      if (data.password !== data.confirmPassword) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["confirmPassword"],
+          message: "passwords do not match",
+        });
+      }
+      //     // if(data.userName.split(" ").length!==2){
+      //     //     ctx.addIssue({
+      //     //         code:"custom",
+      //     //         path:["userName"],
+      //     //         message:"userName must be two words"
+      //     //     })
+      //     // }
+    }),
+};
