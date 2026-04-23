@@ -5,10 +5,18 @@ import {
   emailHTML,
   emailText,
 } from "../email/mail.utils.js";
+import Mail from "nodemailer/lib/mailer/index.js";
 
 export const emailEmitter = new EventEmitter();
+interface IEmail extends Mail.Options {
+  otp: string;
+  userName: string;
+  email: string;
+  name: string;
+  message: string;
+}
 
-emailEmitter.on("confirmEmail", async (data) => {
+emailEmitter.on("confirmEmail", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.confirmEmail,
@@ -19,7 +27,7 @@ emailEmitter.on("confirmEmail", async (data) => {
   });
 });
 
-emailEmitter.on("confirmEmailSuccess", async (data) => {
+emailEmitter.on("confirmEmailSuccess", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.confirmEmailSuccess,
@@ -29,7 +37,7 @@ emailEmitter.on("confirmEmailSuccess", async (data) => {
     console.log(err);
   });
 });
-emailEmitter.on("forgetPassword", async (data) => {
+emailEmitter.on("forgetPassword", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.forgetPassword,
@@ -39,7 +47,7 @@ emailEmitter.on("forgetPassword", async (data) => {
     console.log(err);
   });
 });
-emailEmitter.on("resetPassword", async (data) => {
+emailEmitter.on("resetPassword", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.resetPassword,
@@ -49,7 +57,7 @@ emailEmitter.on("resetPassword", async (data) => {
     console.log(err);
   });
 });
-emailEmitter.on("changePassword", async (data) => {
+emailEmitter.on("changePassword", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.changePassword,
@@ -60,7 +68,7 @@ emailEmitter.on("changePassword", async (data) => {
   });
 });
 
-emailEmitter.on("welcome", async (data) => {
+emailEmitter.on("welcome", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.welcome,
@@ -71,7 +79,7 @@ emailEmitter.on("welcome", async (data) => {
   });
 });
 
-emailEmitter.on("contactUs", async (data) => {
+emailEmitter.on("contactUs", async (data: IEmail) => {
   await sendEmail({
     to: data.email,
     subject: emailSubject.contactUs,
@@ -81,4 +89,3 @@ emailEmitter.on("contactUs", async (data) => {
     console.log(err);
   });
 });
-

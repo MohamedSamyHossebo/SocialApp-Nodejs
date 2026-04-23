@@ -1,35 +1,25 @@
-import nodemailer from "nodemailer";
+import nodemailer, { Transporter } from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
 import { EMAIL_USER, EMAIL_PASS } from "../../config/config.service";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
-export async function sendEmail({
-  to = "",
-  subject = "",
-  text = "",
-  html = "",
-  attachments = [],
-}) {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS,
-      },
-    });
-    const info = await transporter.sendMail({
-      from: EMAIL_USER,
-      to,
-      subject,
-      text,
-      html,
-      attachments,
-    });
-    console.log("Email sent:", info);
-  } catch (error) {
-    console.log("Error sending email:", error);
+export const sendEmail = async (data: Mail.Options): Promise<any> => {
+  if (!data.html && !data.attachments && !data.text) {
+    throw new Error("Missing Email Content");
   }
-}
-
+  const transporter: Transporter<
+    SMTPTransport.SentMessageInfo,
+    SMTPTransport.Options
+  > = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  });
+  const info = await transporter.sendMail({
+    ...data,
+    from: `"Social App" <${EMAIL_USER as string}>`,
+  });
+  console.log(info.messageId);
+};
 export const emailSubject = {
   confirmEmail: "Confirm Your Email",
   confirmEmailSuccess: "Confirm Your Email Success",
@@ -41,7 +31,7 @@ export const emailSubject = {
 };
 
 export const emailHTML = {
-  confirmEmail: (otp:string) => `
+  confirmEmail: (otp: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Confirm Your Email</h1>
@@ -57,7 +47,7 @@ export const emailHTML = {
       <p style="color: #718096; font-size: 14px; margin-bottom: 0;">If you didn't request this, you can safely ignore this email.</p>
     </div>
   `,
-  confirmEmailSuccess: (name:string) => `
+  confirmEmailSuccess: (name: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Confirm Your Email Success</h1>
@@ -73,7 +63,7 @@ export const emailHTML = {
       <p style="color: #718096; font-size: 14px; margin-bottom: 0;">If you didn't request this, you can safely ignore this email.</p>
     </div>
   `,
-  forgetPassword: (otp:string) => `
+  forgetPassword: (otp: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Forget Password</h1>
@@ -89,7 +79,7 @@ export const emailHTML = {
       <p style="color: #718096; font-size: 14px; margin-bottom: 0;">If you didn't request this, you can safely ignore this email.</p>
     </div>
   `,
-  resetPassword: (name:string) => `
+  resetPassword: (name: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Your Password Has Been Reset</h1>
@@ -105,7 +95,7 @@ export const emailHTML = {
       <p style="color: #718096; font-size: 14px; margin-bottom: 0;"> If you didn't request this, please contact the support team.</p>
     </div>
   `,
-  changePassword: (name:string) => `
+  changePassword: (name: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <div style="margin-bottom: 24px;">
         <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700;">Your Password Has Been Changed</h1>
@@ -121,7 +111,7 @@ export const emailHTML = {
       <p style="color: #718096; font-size: 14px; margin-bottom: 0;"> If you didn't request this, please contact the support team.</p>
     </div>
   `,
-  welcome: (name:string) => `
+  welcome: (name: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 1px solid #e1e4e8; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <h1 style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 700; text-align: center;">Welcome to Saraha!</h1>
       <div style="margin-top: 24px; color: #4a5568; line-height: 1.6;">
@@ -136,7 +126,7 @@ export const emailHTML = {
       </div>
     </div>
   `,
-  contactUs: (name:string, email:string, message:string) => `
+  contactUs: (name: string, email: string, message: string) => `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; background: #ffffff; border: 1px solid #e1e4e8; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <h1 style="color: #1a1a1a; margin: 0; font-size: 24px; font-weight: 700; border-bottom: 2px solid #000000; padding-bottom: 12px; display: inline-block;">New Contact Message</h1>
       
@@ -158,7 +148,7 @@ export const emailHTML = {
 };
 
 export const emailText = {
-  confirmEmail: (otp:string) => `
+  confirmEmail: (otp: string) => `
     Confirm Your Email
     
     Welcome to Saraha! Please use the verification code below to confirm your account:
@@ -167,7 +157,7 @@ export const emailText = {
     
     If you didn't request this, you can safely ignore this email.
   `,
-  confirmEmailSuccess: (name:string) => `
+  confirmEmailSuccess: (name: string) => `
     Confirm Your Email Success
     
     Welcome to Saraha! Your email has been confirmed successfully.
@@ -176,7 +166,7 @@ export const emailText = {
     
     If you didn't request this, you can safely ignore this email.
   `,
-  resetPassword: (name:string) => `
+  resetPassword: (name: string) => `
     Your Password Has Been Reset
     
     Hello ${name},
@@ -184,7 +174,7 @@ export const emailText = {
     
     If you didn't request this, you can safely ignore this email.
   `,
-  forgetPassword: (otp:string) => `
+  forgetPassword: (otp: string) => `
     Forget Password
     
     We received a request to forget your password. Use the following code to proceed:
@@ -193,7 +183,7 @@ export const emailText = {
     
     If you didn't request this change, please ignore this email.
   `,
-  changePassword: (name:string) => `
+  changePassword: (name: string) => `
     Your Password Has Been Changed
     
     Hello ${name},
@@ -201,7 +191,7 @@ export const emailText = {
     
     If you didn't request this, please contact the support team.
   `,
-  welcome: (name:string) => `
+  welcome: (name: string) => `
     Welcome to Saraha App
     Hello ${name},
     Thank you for joining Saraha App. We're excited to have you on board!
@@ -209,7 +199,7 @@ export const emailText = {
     Best regards,
     The Saraha App Team
   `,
-  contactUs: (name:string, email:string, message:string) => `
+  contactUs: (name: string, email: string, message: string) => `
     Contact Us
     Name: ${name}
     Email: ${email}
@@ -218,43 +208,43 @@ export const emailText = {
 };
 
 export const emailAttachments = {
-  confirmEmail: (otp:string) => [
+  confirmEmail: (otp: string) => [
     {
       filename: "confirm-email.html",
       content: emailHTML.confirmEmail(otp),
     },
   ],
-  confirmEmailSuccess: (name:string) => [
+  confirmEmailSuccess: (name: string) => [
     {
       filename: "confirm-email-success.html",
       content: emailHTML.confirmEmailSuccess(name),
     },
   ],
-  resetPassword: (otp:string) => [
+  resetPassword: (otp: string) => [
     {
       filename: "reset-password.html",
       content: emailHTML.resetPassword(otp),
     },
   ],
-  forgetPassword: (otp:string) => [
+  forgetPassword: (otp: string) => [
     {
       filename: "forget-password.html",
       content: emailHTML.forgetPassword(otp),
     },
   ],
-  changePassword: (name:string) => [
+  changePassword: (name: string) => [
     {
       filename: "change-password.html",
       content: emailHTML.changePassword(name),
     },
   ],
-  welcome: (name:string) => [
+  welcome: (name: string) => [
     {
       filename: "welcome.html",
       content: emailHTML.welcome(name),
     },
   ],
-  contactUs: (name:string, email:string, message:string) => [
+  contactUs: (name: string, email: string, message: string) => [
     {
       filename: "contact-us.html",
       content: emailHTML.contactUs(name, email, message),
