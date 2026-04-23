@@ -15,3 +15,6 @@ if (!process.env.MONGO_URI) {
 export const MONGO_URI = process.env.MONGO_URI as string;
 
 export const WhiteList = process.env.WHITE_LIST as string;
+
+export const SALT= process.env.SALT as string
+export const ENC_KEY=process.env.ENC_KEY as string
