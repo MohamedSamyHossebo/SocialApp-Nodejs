@@ -5,6 +5,8 @@ import { UserRepository } from "../../DB/repositories/user.repository";
 import { ConflictException } from "../../middlewares/Error/ErrorHandler.middleware";
 import { generateHash } from "../../utils/security/hash";
 import { encrypt } from "../../utils/security/encryption";
+import { generateOtp } from "../../utils/security/otp.security";
+import { emailEmitter } from "../../utils/events/email.events";
 
 class AuthenticationService {
   private _userModel = new UserRepository(UserModel);
@@ -18,6 +20,7 @@ class AuthenticationService {
     });
 
     if (checkUser) throw new ConflictException("User Already Exists");
+    const otp = generateOtp();
 
     const user = await this._userModel.create({
       data: [
@@ -26,12 +29,13 @@ class AuthenticationService {
           lastName,
           email,
           password: await generateHash(password),
-          phoneNumber:await encrypt(phoneNumber),
+          phoneNumber: await encrypt(phoneNumber),
+          confirmEmailOTP: await generateHash(otp),
         },
       ],
       options: { validateBeforeSave: true },
     });
-
+    await emailEmitter.emit("confirmEmail", { email, otp });
     return res.success({
       statusCode: 201,
       message: "Signup successful",
