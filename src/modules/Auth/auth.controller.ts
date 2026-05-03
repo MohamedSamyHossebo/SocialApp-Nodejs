@@ -9,6 +9,11 @@ router.post(
   validation(AuthValidation.signUpSchema),
   AuthenticationService.signup,
 );
+router.post(
+  "/login",
+  validation(AuthValidation.loginSchema),
+  AuthenticationService.login,
+);
 router.patch(
   "/confirm-email",
   validation(AuthValidation.confirmEmailSchema),

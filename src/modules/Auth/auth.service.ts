@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ConfirmEmailDTO, SignUpDTO } from "./auth.dto";
+import { ConfirmEmailDTO, SignInDTO, SignUpDTO } from "./auth.dto";
 import { UserModel } from "../../DB/models/user/User.model";
 import { UserRepository } from "../../DB/repositories/user.repository";
 import {
@@ -11,14 +11,19 @@ import { compareHash, generateHash } from "../../utils/security/hash";
 import { encrypt } from "../../utils/security/encryption";
 import { generateOtp } from "../../utils/security/otp.security";
 import { emailEmitter } from "../../utils/events/email.events";
+import { TokenService } from "../../utils/services/token";
 
 class AuthenticationService {
-  private _userModel = new UserRepository(UserModel);
-  constructor() {}
+  private _userRepo = new UserRepository(UserModel);
+  private _tokenService: TokenService;
+  constructor() {
+    this._tokenService = new TokenService();
+  }
+
   signup = async (req: Request, res: Response): Promise<Response> => {
     const { firstName, lastName, email, password, phoneNumber }: SignUpDTO =
       req.body;
-    const checkUser = await this._userModel.findOne({
+    const checkUser = await this._userRepo.findOne({
       filter: { email },
       select: "email",
     });
@@ -26,7 +31,7 @@ class AuthenticationService {
     if (checkUser) throw new ConflictException("User Already Exists");
     const otp = generateOtp();
 
-    const user = await this._userModel.create({
+    const user = await this._userRepo.create({
       data: [
         {
           firstName,
@@ -50,7 +55,7 @@ class AuthenticationService {
   };
   confirmEmail = async (req: Request, res: Response): Promise<Response> => {
     const { email, otp }: ConfirmEmailDTO = req.body;
-    const user = await this._userModel.findOne({
+    const user = await this._userRepo.findOne({
       filter: {
         email,
         confirmEmailOTP: { $exists: true },
@@ -61,7 +66,7 @@ class AuthenticationService {
       throw new NotFoundException("User Not found or Already Confirmed");
     if (!compareHash(otp, user.confirmEmailOTP as string))
       throw new BadRequestException("Invalid OTP");
-    await this._userModel.updateOne({
+    await this._userRepo.updateOne({
       filter: { email },
       update: {
         confirmEmail: new Date(),
@@ -73,6 +78,26 @@ class AuthenticationService {
     return res.success({
       statusCode: 200,
       message: "Your Email Successfully Confirmed",
+    });
+  };
+  login = async (req: Request, res: Response): Promise<Response> => {
+    const { email, password }: SignInDTO = req.body;
+    const user = await this._userRepo.findOne({
+      filter: { email, confirmEmail: { $exists: true } },
+    });
+    if (!user) {
+      throw new NotFoundException("User Not Found");
+    }
+    if (!(await compareHash(password, user.password))) {
+      throw new BadRequestException("Invalid Email Or Password ");
+    }
+    const credentials = await this._tokenService.getNewLoginCredentials(
+      user as any,
+    );
+    return res.success({
+      statusCode: 200,
+      message: "Logged in Successfully",
+      data: { credentials },
     });
   };
 }
