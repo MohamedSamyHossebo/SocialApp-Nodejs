@@ -11,3 +11,7 @@ export enum UserGender {
   MALE = "MALE",
   FEMALE = "FEMALE",
 }
+export enum SignatureEnum {
+  USER = 0,
+  ADMIN = 1,
+}
