@@ -12,9 +12,11 @@ import { v4 as uuid } from "uuid";
 import {
   BadRequestException,
   NotFoundException,
+  UnAuthorizedException,
 } from "../../middlewares/Error/ErrorHandler.middleware";
 import { UserRepository } from "../../DB/repositories/user.repository";
 import { HUserDocument, UserModel } from "../../DB/models/user/User.model";
+import { get, revokeTokenKey } from "../../DB/redis.service";
 
 export interface CustomJWTPayload extends JwtPayload {
   id: string;
@@ -76,7 +78,7 @@ export class TokenService {
     );
     return { accessToken, refreshToken };
   };
-  
+
   decodedToken = async ({
     authorization,
     tokenType = TokenTypeEnum.ACCESS,
@@ -100,6 +102,12 @@ export class TokenService {
         ? signature.accessSignature
         : signature.refreshSignature;
     const decoded = await this.verify(token, secret);
+    const isRevoked = await get({
+      key: revokeTokenKey({ userId: decoded.id, jti: decoded.jti }),
+    });
+    if(isRevoked){
+      throw new UnAuthorizedException("Token Is Revoked")
+    }
     const user = await this._userRepo.findById({ id: decoded.id });
     if (!user) {
       throw new NotFoundException("Not Registered Account");

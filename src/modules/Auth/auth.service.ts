@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ConfirmEmailDTO, SignInDTO, SignUpDTO } from "./auth.dto";
+import { ConfirmEmailDTO, LogOutDTO, SignInDTO, SignUpDTO } from "./auth.dto";
 import { UserModel } from "../../DB/models/user/User.model";
 import { UserRepository } from "../../DB/repositories/user.repository";
 import {
@@ -12,6 +12,9 @@ import { encrypt } from "../../utils/security/encryption";
 import { generateOtp } from "../../utils/security/otp.security";
 import { emailEmitter } from "../../utils/events/email.events";
 import { TokenService } from "../../utils/services/token";
+import { LogoutTypeEnum } from "../../utils/enums/User.enums";
+import { revokeTokenKey, set } from "../../DB/redis.service";
+import { ACCESS_EXPIRE } from "../../config/config.service";
 
 class AuthenticationService {
   private _userRepo = new UserRepository(UserModel);
@@ -98,6 +101,35 @@ class AuthenticationService {
       statusCode: 200,
       message: "Logged in Successfully",
       data: { credentials },
+    });
+  };
+  logoutWithRedis = async (req: Request, res: Response): Promise<Response> => {
+    const { flag }: LogOutDTO = req.body;
+    let statue = 200;
+    switch (flag) {
+      case LogoutTypeEnum.LOG_OUT:
+        await set({
+          key: revokeTokenKey({ userId: req.decoded.id, jti: req.decoded.jti }),
+          value: req.decoded.jti,
+          ttl: Number(ACCESS_EXPIRE),
+        });
+        statue = 201;
+        break;
+      case LogoutTypeEnum.LOG_OUT_FROM_ALL:
+        await this._userRepo.updateOne({
+          filter: { _id: req.decoded.id },
+          update: {
+            changeCredentialsTime: Date.now(),
+          },
+        });
+        statue = 200;
+        break;
+      default:
+        break;
+    }
+    return res.success({
+      statusCode: 200,
+      message: "Logged Out Successfully",
     });
   };
 }
