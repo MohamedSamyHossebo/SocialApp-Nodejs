@@ -33,3 +33,4 @@ export const REFRESH_EXPIRE = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN;
 // Redis
 export const REDIS_URL = process.env.REDIS_URL;
 
+export const CLIENT_ID = process.env.CLIENT_ID;

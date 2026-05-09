@@ -16,6 +16,8 @@ router.post(
   validation(AuthValidation.loginSchema),
   AuthenticationService.login,
 );
+router.post("/google-login", AuthenticationService.googleLogin);
+router.post("/google-signup", AuthenticationService.googleSignUp);
 router.post(
   "/logout",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),

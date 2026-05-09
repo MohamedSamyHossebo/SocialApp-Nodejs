@@ -1,5 +1,9 @@
 import mongoose, { HydratedDocument, model, Schema } from "mongoose";
-import { UserGender, UserRole } from "../../../utils/enums/User.enums";
+import {
+  PROVIDER,
+  UserGender,
+  UserRole,
+} from "../../../utils/enums/User.enums";
 
 export interface IUser {
   firstName: string;
@@ -21,6 +25,8 @@ export interface IUser {
   createdAt: Date;
   updatedAt?: Date;
   changeCredentialsTime?: Date;
+  profilePic?: string;
+  provider: number;
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -48,9 +54,12 @@ export const UserSchema = new Schema<IUser>(
     confirmEmailOTP: String,
     confirmEmail: String,
     changeCredentialsTime: Date,
+    profilePic: String,
     password: {
       type: String,
-      required: true,
+      required: function (): boolean {
+        return this.provider === PROVIDER.SYSTEM ? true : false;
+      },
     },
     resetPasswordOTP: String,
     phoneNumber: String,
@@ -64,6 +73,11 @@ export const UserSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(UserRole),
       default: UserRole.USER,
+    },
+    provider: {
+      type: Number,
+      enum: Object.values(PROVIDER).filter((v) => typeof v === "number"),
+      default: PROVIDER.SYSTEM,
     },
   },
   {

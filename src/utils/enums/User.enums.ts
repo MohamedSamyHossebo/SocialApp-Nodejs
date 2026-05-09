@@ -16,11 +16,15 @@ export enum SignatureEnum {
   ADMIN = 1,
 }
 
-export enum TokenTypeEnum{
-  ACCESS="ACCESS",
-  REFRESH="REFRESH"
+export enum TokenTypeEnum {
+  ACCESS = "ACCESS",
+  REFRESH = "REFRESH",
 }
-export enum LogoutTypeEnum{
-  LOG_OUT="LOG_OUT",
-  LOG_OUT_FROM_ALL="LOG_OUT_FROM_ALL"
+export enum LogoutTypeEnum {
+  LOG_OUT = "LOG_OUT",
+  LOG_OUT_FROM_ALL = "LOG_OUT_FROM_ALL",
+}
+export enum PROVIDER {
+  SYSTEM = 0,
+  GOOGLE = 1,
 }
