@@ -1,10 +1,14 @@
 import { Router } from "express";
-import UserService from "./user.service";
 import { Request, Response } from "express";
+import { authentication } from "../../middlewares/Auth/authentication.middleware";
+import { TokenTypeEnum } from "../../utils/enums/User.enums";
+import { userService } from "./user.service";
 const router: Router = Router();
 
-router.get("/", (req: Request, res: Response) => {
-  return res.success({ message: "Hello, World!", statusCode: 200 });
-});
+router.get(
+  "/profile",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  userService.getProfile,
+);
 
 export default router;

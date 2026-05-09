@@ -4,7 +4,6 @@ import { TokenService } from "../../utils/services/token";
 import {
   BadRequestException,
   ForbiddenException,
-  UnAuthorizedException,
 } from "../Error/ErrorHandler.middleware";
 
 export const authentication = ({ tokenType = TokenTypeEnum.ACCESS }) => {
