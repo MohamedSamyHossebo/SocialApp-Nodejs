@@ -30,3 +30,6 @@ export const USER_REFRESH_SIGNATURE = process.env.JWT_REFRESH_USER_SECRET;
 // JWT EXP
 export const ACCESS_EXPIRE = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN;
 export const REFRESH_EXPIRE = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN;
+// Redis
+export const REDIS_URL = process.env.REDIS_URL;
+

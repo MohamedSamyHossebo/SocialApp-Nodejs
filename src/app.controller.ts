@@ -12,14 +12,16 @@ import {
 import { globalSuccessHandler } from "./middlewares/Success/SucessHandler.middleware";
 import { corsOptions } from "./utils/cors/cors.utils";
 import { rateLimiter } from "./utils/ratelimiter/rateLimiter.utils";
+import connectRedis from "./DB/redis.connection.db";
 
 export const bootstrap = async () => {
   const port: number | string = PORT;
   const app: Express = express();
   await connectDB();
+  await connectRedis();
   app.use(express.json(), cors(corsOptions), helmet(), rateLimiter);
   app.use(globalSuccessHandler);
-  
+
   app.get("/", (req: Request, res: Response) => {
     return res.success({ message: "Hello, World!", statusCode: 200 });
   });
