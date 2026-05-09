@@ -1,9 +1,11 @@
 import { Response, Request, NextFunction } from "express";
-import { TokenTypeEnum } from "../../utils/enums/User.enums";
-import { CustomJWTPayload, TokenService } from "../../utils/services/token";
-import { BadRequestException } from "../Error/ErrorHandler.middleware";
-import { HUserDocument } from "../../DB/models/user/User.model";
-
+import { TokenTypeEnum, UserRole } from "../../utils/enums/User.enums";
+import { TokenService } from "../../utils/services/token";
+import {
+  BadRequestException,
+  ForbiddenException,
+  UnAuthorizedException,
+} from "../Error/ErrorHandler.middleware";
 
 export const authentication = ({ tokenType = TokenTypeEnum.ACCESS }) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -18,6 +20,19 @@ export const authentication = ({ tokenType = TokenTypeEnum.ACCESS }) => {
       })) || {};
     req.user = user;
     req.decoded = decoded;
+    return next();
+  };
+};
+
+export const authorization = ({
+  accessRoles = [],
+}: {
+  accessRoles?: UserRole[];
+}) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user.role || !accessRoles.includes(req.user.role)) {
+      throw new ForbiddenException("Forbidden Request");
+    }
     return next();
   };
 };
