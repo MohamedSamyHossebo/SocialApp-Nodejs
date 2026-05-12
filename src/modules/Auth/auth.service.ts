@@ -13,9 +13,10 @@ import { generateOtp } from "../../utils/security/otp.security";
 import { emailEmitter } from "../../utils/events/email.events";
 import { TokenService } from "../../utils/services/token";
 import { LogoutTypeEnum, PROVIDER } from "../../utils/enums/User.enums";
-import { revokeTokenKey, set } from "../../DB/redis.service";
+import { addFCM, getFCM, revokeTokenKey, set } from "../../DB/redis.service";
 import { ACCESS_EXPIRE, CLIENT_ID } from "../../config/config.service";
 import { OAuth2Client } from "google-auth-library";
+import { notification } from "../../utils/services/notification.service";
 
 class AuthenticationService {
   private _userRepo = new UserRepository(UserModel);
@@ -85,7 +86,7 @@ class AuthenticationService {
     });
   };
   login = async (req: Request, res: Response): Promise<Response> => {
-    const { email, password }: SignInDTO = req.body;
+    const { email, password, FCM }: SignInDTO = req.body;
     const user = await this._userRepo.findOne({
       filter: { email, confirmEmail: { $exists: true } },
     });
@@ -94,6 +95,17 @@ class AuthenticationService {
     }
     if (!(await compareHash(password, user.password))) {
       throw new BadRequestException("Invalid Email Or Password ");
+    }
+    // Firbase Notfication
+    if (FCM) {
+      await addFCM(user._id, FCM);
+      const tokens = await getFCM(user._id);
+      if (tokens.length) {
+        await notification.sendNotfications({
+          tokens,
+          data: { title: "Login", body: `New Login at ${Date.now()}` },
+        });
+      }
     }
     const credentials = await this._tokenService.getNewLoginCredentials(
       user as any,
