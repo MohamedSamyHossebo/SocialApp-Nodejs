@@ -1,12 +1,15 @@
 import { model, Schema, Types } from "mongoose";
 import { IUser } from "../user/User.model";
-import { AvailabiltiesEnum } from "../../../utils/enums/Post.enums";
+import {
+  AvailabiltiesEnum,
+  ReactionsEnum,
+} from "../../../utils/enums/Post.enums";
 
 export interface IPosts {
   folderId?: string;
   content: string;
   attachments?: string[];
-  likes?: Types.ObjectId[] | IUser[];
+  reactions?: { user: Types.ObjectId | IUser; type: ReactionsEnum }[];
   tags?: Types.ObjectId[] | IUser[];
   availability?: AvailabiltiesEnum;
   createdBy: Types.ObjectId | IUser;
@@ -15,6 +18,7 @@ export interface IPosts {
   updatedAt?: Date;
   deletedAt?: Date;
   restoredAt?: Date;
+  AvailabaleReactions?: ReactionsEnum[];
 }
 const PostsShema = new Schema<IPosts>(
   {
@@ -31,7 +35,12 @@ const PostsShema = new Schema<IPosts>(
       enum: AvailabiltiesEnum,
       default: AvailabiltiesEnum.PUBLIC,
     },
-    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    reactions: [
+      {
+        user: { type: Types.ObjectId, ref: "User", required: true },
+        type: { type: Number, enum: ReactionsEnum, required: true },
+      },
+    ],
     tags: [{ type: Schema.Types.ObjectId, ref: "User" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },

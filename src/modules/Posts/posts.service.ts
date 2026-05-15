@@ -13,7 +13,12 @@ import { NotFoundException } from "../../middlewares/Error/ErrorHandler.middlewa
 import { Types } from "mongoose";
 import { getFCM } from "../../DB/redis.service";
 import { success } from "zod";
-import { AvailabiltiesEnum } from "../../utils/enums/Post.enums";
+import {
+  AvailabiltiesEnum,
+  ReactionOptions,
+  ReactionsEnum,
+  AvailabilityOptions,
+} from "../../utils/enums/Post.enums";
 
 export const getAvailability = (user: HUserDocument) => {
   return [
@@ -94,30 +99,56 @@ class PostsService {
 
     return res.success({
       statusCode: 200,
-      data: populatedPosts,
+      data: {
+        post: populatedPosts,
+        enums: {
+          availability: AvailabilityOptions,
+          reactions: ReactionOptions,
+        },
+      },
       message: "Post created successfully",
     });
   };
 
   react = async (req: Request, res: Response): Promise<Response> => {
     const { postId } = req.params;
-    const { react } = req.query;
+    const reactionValue = Number(req.query.react);
+    const userId = req.user._id;
 
-    const post = await this._postRepo.findOneAndUpdate({
+    const isRemove = reactionValue < 0 || !(reactionValue in ReactionsEnum);
+
+    // Remove existing reaction
+    const postAfterPull = await this._postRepo.findOneAndUpdate({
       filter: { _id: postId, $or: getAvailability(req.user) },
-      update: {
-        ...(Number(react) > 0
-          ? { $addToSet: { likes: req.user._id } }
-          : { $pull: { likes: req.user._id } }),
-      },
+      update: { $pull: { reactions: { user: userId } } },
+      options: { new: true }, 
     });
-    if (!post) {
-      throw new NotFoundException("Post not found");
+
+    if (!postAfterPull) throw new NotFoundException("Post not found");
+
+    let post = postAfterPull;
+
+    // Add new reaction if not a removal
+    if (!isRemove) {
+      const postAfterPush = await this._postRepo.findOneAndUpdate({
+        filter: { _id: postId },
+        update: { $push: { reactions: { user: userId, type: reactionValue } } },
+        options: { new: true }, 
+      });
+
+      if (postAfterPush) post = postAfterPush;
     }
+
     return res.success({
       statusCode: 200,
-      data: post,
-      message: "Reacted to post successfully",
+      message: "Reacted successfully",
+      data: {
+        post,
+        enums: {
+          availability: AvailabilityOptions,
+          reactions: ReactionOptions,
+        },
+      },
     });
   };
 }
