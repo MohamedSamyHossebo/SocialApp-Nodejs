@@ -132,15 +132,55 @@ class CommentsService {
     });
   };
   updateComment = async (req: Request, res: Response): Promise<Response> => {
+    const { commentId } = req.params as { commentId: string };
+    const { content, tags = [] }: CreateCommentDTO = req.body;
+
+    const updatePayload: any = {};
+    if (content !== undefined) updatePayload.content = content;
+    if (tags && tags.length) {
+      updatePayload.tags = tags.map((tag) => new Types.ObjectId(tag));
+    }
+
+    const updatedComment = await this._commentRepo.findOneAndUpdate({
+      filter: { _id: commentId, createdBy: req.user._id },
+      update: updatePayload,
+      options: { new: true },
+    });
+
+    if (!updatedComment) {
+      throw new NotFoundException("Comment not found");
+    }
+
     return res.success({
       statusCode: 200,
-      message: "Comment created successfully",
+      message: "Comment updated successfully",
+      data: {
+        comment: updatedComment,
+        enums: {
+          reactions: ReactionOptions,
+        },
+      },
     });
   };
   deleteComment = async (req: Request, res: Response): Promise<Response> => {
+    const { commentId } = req.params as { commentId: string };
+
+    const deletedComment = await this._commentRepo.findOneAndUpdate({
+      filter: { _id: commentId, createdBy: req.user._id },
+      update: { deletedAt: new Date() },
+      options: { new: true },
+    });
+
+    if (!deletedComment) {
+      throw new NotFoundException("Comment not found");
+    }
+
     return res.success({
       statusCode: 200,
-      message: "Comment created successfully",
+      message: "Comment deleted successfully",
+      data: {
+        comment: deletedComment,
+      },
     });
   };
   reactToComment = async (req: Request, res: Response): Promise<Response> => {
