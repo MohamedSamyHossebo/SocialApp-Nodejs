@@ -29,7 +29,10 @@ const CommentSchema = new Schema<IComment>(
         type: { type: Number, enum: ReactionsEnum, required: true },
       },
     ],
-    AvailabaleReactions: [{ type: Number, enum: ReactionsEnum }],
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    deletedAt: { type: Date },
+    restoredAt: { type: Date },
   },
   {
     timestamps: true,

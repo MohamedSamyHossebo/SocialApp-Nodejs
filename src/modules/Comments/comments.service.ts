@@ -11,6 +11,11 @@ import { getAvailability } from "../Posts/posts.service";
 import { NotFoundException } from "../../middlewares/Error/ErrorHandler.middleware";
 import { Types } from "mongoose";
 import { getFCM } from "../../DB/redis.service";
+import {
+  AvailabilityOptions,
+  ReactionOptions,
+  ReactionsEnum,
+} from "../../utils/enums/Post.enums";
 
 class CommentsService {
   private readonly _postRepo = new PostRepository(PostsModel);
@@ -39,7 +44,7 @@ class CommentsService {
 
     const tagged: Types.ObjectId[] = [];
     const FCM_TOKENS: string[] = [];
-    
+
     if (tags.length) {
       const taggedAccounts = await this._userRepo.find({
         filter: { _id: { $in: tags } },
@@ -92,7 +97,12 @@ class CommentsService {
     return res.success({
       statusCode: 200,
       message: "Comment created successfully",
-      data: comment,
+      data: {
+        comment,
+        enums: {
+          reactions: ReactionOptions,
+        },
+      },
     });
   };
 
@@ -105,7 +115,7 @@ class CommentsService {
       filter: { postId },
       options: {
         populate: [
-          { path: "createdBy", select: "firstName lastName email" },
+          { path: "createdBy", select: "firstName lastName email " },
           { path: "tags", select: "firstName lastName email" },
         ],
       },
@@ -113,7 +123,12 @@ class CommentsService {
     return res.success({
       statusCode: 200,
       message: "Comments retrieved successfully",
-      data: comments,
+      data: {
+        comments,
+        enums: {
+          reactions: ReactionOptions,
+        },
+      },
     });
   };
   updateComment = async (req: Request, res: Response): Promise<Response> => {
@@ -126,6 +141,47 @@ class CommentsService {
     return res.success({
       statusCode: 200,
       message: "Comment created successfully",
+    });
+  };
+  reactToComment = async (req: Request, res: Response): Promise<Response> => {
+    const { commentId } = req.params;
+    const reactionValue = Number(req.query.react);
+    const userId = req.user._id;
+
+    const isRemove = reactionValue < 0 || !(reactionValue in ReactionsEnum);
+
+    // Remove existing reaction
+    const commentAfterPull = await this._commentRepo.findOneAndUpdate({
+      filter: { _id: commentId },
+      update: { $pull: { reactions: { user: userId } } },
+      options: { new: true },
+    });
+
+    if (!commentAfterPull) throw new NotFoundException("Comment not found");
+
+    let comment = commentAfterPull;
+
+    // Add new reaction if not a removal
+    if (!isRemove) {
+      const commentAfterPush = await this._commentRepo.findOneAndUpdate({
+        filter: { _id: commentId },
+        update: { $push: { reactions: { user: userId, type: reactionValue } } },
+        options: { new: true },
+      });
+
+      if (commentAfterPush) comment = commentAfterPush;
+    }
+
+    return res.success({
+      statusCode: 200,
+      message: "Reacted successfully",
+      data: {
+        comment,
+        enums: {
+          availability: AvailabilityOptions,
+          reactions: ReactionOptions,
+        },
+      },
     });
   };
 }

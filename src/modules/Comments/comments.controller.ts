@@ -30,5 +30,9 @@ router.patch(
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
   CommentsService.deleteComment,
 );
-
+router.patch('/:commentId/react',
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  CommentsService.reactToComment,
+);
 export default router;
