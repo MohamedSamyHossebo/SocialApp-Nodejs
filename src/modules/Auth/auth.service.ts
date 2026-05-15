@@ -58,6 +58,7 @@ class AuthenticationService {
       },
     });
   };
+
   confirmEmail = async (req: Request, res: Response): Promise<Response> => {
     const { email, otp }: ConfirmEmailDTO = req.body;
     const user = await this._userRepo.findOne({
@@ -85,6 +86,7 @@ class AuthenticationService {
       message: "Your Email Successfully Confirmed",
     });
   };
+
   login = async (req: Request, res: Response): Promise<Response> => {
     const { email, password, FCM }: SignInDTO = req.body;
     const user = await this._userRepo.findOne({
@@ -116,6 +118,7 @@ class AuthenticationService {
       data: { credentials },
     });
   };
+
   verifyGoogle = async ({ idToken }: { idToken: string }) => {
     const client = new OAuth2Client();
     const ticket = await client.verifyIdToken({
@@ -181,6 +184,7 @@ class AuthenticationService {
       data: credentials,
     });
   };
+
   googleSignUp = async (req: Request, res: Response) => {
     const { idToken } = req.body;
     const { email, given_name, family_name, picture } = await this.verifyGoogle(
@@ -218,6 +222,7 @@ class AuthenticationService {
       data: { credentials },
     });
   };
+
   logoutWithRedis = async (req: Request, res: Response): Promise<Response> => {
     const { flag }: LogOutDTO = req.body;
     let statue = 200;
