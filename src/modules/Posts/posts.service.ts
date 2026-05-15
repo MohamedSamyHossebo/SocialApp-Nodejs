@@ -63,16 +63,15 @@ class PostsService {
           title: "You were tagged in a post",
           body: JSON.stringify({
             message: `${req.user.firstName} ${req.user.lastName} tagged you in a post`,
-            post:posts?.[0]?._id.toString()
+            post: posts?.[0]?._id.toString(),
           }),
-        }
+        },
       });
     }
-   const populatedPosts = await posts?.[0]?.populate([
-      {path:"createdBy", select:"firstName lastName email"},
-      {path:"tags", select:"firstName lastName email"}
-    ])
-
+    const populatedPosts = await posts?.[0]?.populate([
+      { path: "createdBy", select: "firstName lastName email" },
+      { path: "tags", select: "firstName lastName email" },
+    ]);
 
     return res.success({
       statusCode: 200,
