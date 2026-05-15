@@ -18,7 +18,7 @@ export const createPostSchema = {
         )
         .optional(),
       tags: z.array(z.string()).optional(),
-      Availability: z.coerce.number().default(AvailabiltiesEnum.PUBLIC),
+      availability: z.coerce.number().default(AvailabiltiesEnum.PUBLIC),
     })
     .superRefine((args, ctx) => {
       if (!args.content && !args.files) {
