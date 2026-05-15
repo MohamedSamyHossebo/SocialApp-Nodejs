@@ -1,9 +1,10 @@
-import { z, ZodError } from "zod";
-import { NextFunction, Request, Response } from "express";
+import { mime, z, ZodError } from "zod";
+import e, { NextFunction, Request, Response } from "express";
 import {
   BadRequestException,
   InternalServerErrorException,
 } from "../Error/ErrorHandler.middleware";
+import { Types } from "mongoose";
 
 type KeyRequest = keyof Request;
 type SchemaType = Partial<Record<KeyRequest, z.ZodType>>;
@@ -75,4 +76,23 @@ export const generalFields = {
   password: z.string({ error: "password is required" }),
   confirmPassword: z.string({ error: "confirmPassword is required" }),
   otp: z.string({ error: "OTP is required" }).regex(/^\d{6}$/),
+  file: function (mimeTypes: string[]) {
+    return z.strictObject({
+      filedName: z.string(),
+      originalName: z.string(),
+      encoding: z.string(),
+      mimeType: z.enum(mimeTypes, {
+        error: `file must be one of the following types: ${mimeTypes.join(", ")}`,
+      }),
+      buffer: z.any().optional(),
+      path: z.string().optional(),
+      size: z.number().optional(),
+    });
+  },
+  id: z.string().refine(
+    (val) => {
+      return Types.ObjectId.isValid(val);
+    },
+    { error: "Invalid ObjectId" },
+  ),
 };
