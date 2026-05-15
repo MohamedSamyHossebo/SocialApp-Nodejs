@@ -11,6 +11,10 @@ import {
   UpdateWriteOpResult,
 } from "mongoose";
 
+type QueryOptionsWithPopulate<TDocument> =
+  | (QueryOptions<TDocument> & { populate?: PopulateOptions | PopulateOptions[] })
+  | undefined;
+
 export abstract class DataBaseRepository<TDocument> {
   constructor(protected readonly model: Model<TDocument>) {}
 
@@ -21,7 +25,7 @@ export abstract class DataBaseRepository<TDocument> {
   }: {
     filter?: QueryFilter<TDocument>;
     select?: ProjectionType<TDocument> | null;
-    options?: QueryOptions<TDocument> | null;
+    options?: QueryOptionsWithPopulate<TDocument>;
   }) {
     const doc = this.model.findOne(filter).select(select || "");
     if (options?.populate) {
@@ -36,7 +40,7 @@ export abstract class DataBaseRepository<TDocument> {
   }: {
     id: string;
     select?: ProjectionType<TDocument> | null;
-    options?: QueryOptions<TDocument> | null;
+    options?: QueryOptionsWithPopulate<TDocument>;
   }) {
     const doc = this.model.findById(id).select(select || "");
     if (options?.populate) {
@@ -51,7 +55,7 @@ export abstract class DataBaseRepository<TDocument> {
   }: {
     filter?: QueryFilter<TDocument>;
     select?: ProjectionType<TDocument> | null;
-    options?: QueryOptions<TDocument> | null;
+    options?: QueryOptionsWithPopulate<TDocument>;
   }) {
     const doc = this.model.find(filter).select(select || "");
     if (options?.populate) {
@@ -72,7 +76,7 @@ export abstract class DataBaseRepository<TDocument> {
   }: {
     filter: QueryFilter<TDocument>;
     update: UpdateQuery<TDocument>;
-    options?: QueryOptions<TDocument> | null;
+    options?: QueryOptionsWithPopulate<TDocument> | null;
   }): Promise<HydratedDocument<TDocument> | null> {
     if (Array.isArray(update)) {
       update.push({ $set: { __v: { $add: ["$__v", 1] } } });

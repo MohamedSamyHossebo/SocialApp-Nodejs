@@ -60,3 +60,23 @@ export const reactToPostSchema = {
     react: z.coerce.number().default(ReactionsEnum.LIKE),
   }),
 };
+export const updatePostSchema = {
+  params: z.strictObject({
+    postId: generalFields.id,
+  }),
+  body: z
+    .strictObject({
+      content: z.string().optional(),
+      availability: z.coerce.number().optional(),
+      tags: z.array(z.string()).optional(),
+    })
+    .superRefine((args, ctx) => {
+      if (!args.content && !args.availability && !args.tags) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["content", "availability", "tags"],
+          message: "At least one field must be provided for update",
+        });
+      }
+    }),
+};

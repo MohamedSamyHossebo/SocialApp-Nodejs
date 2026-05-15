@@ -15,6 +15,17 @@ router.post(
   validation(postValidation.createPostSchema),
   PostsService.createPost,
 );
+router.get("/",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  PostsService.getAllPosts
+);
+router.patch('/update/:postId',
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  validation(postValidation.updatePostSchema),
+  PostsService.updatePost
+)
 router.patch(
   "/:postId/react",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
@@ -22,4 +33,10 @@ router.patch(
   validation(postValidation.reactToPostSchema),
   PostsService.react,
 );
+router.patch("/soft-delete/:postId",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  PostsService.deletePost
+);
+
 export default router;
