@@ -9,6 +9,7 @@ export interface IPosts {
   folderId?: string;
   content: string;
   attachments?: string[];
+  comment?: Types.ObjectId[];
   reactions?: { user: Types.ObjectId | IUser; type: ReactionsEnum }[];
   tags?: Types.ObjectId[] | IUser[];
   availability?: AvailabiltiesEnum;
@@ -41,6 +42,7 @@ const PostsShema = new Schema<IPosts>(
         type: { type: Number, enum: ReactionsEnum, required: true },
       },
     ],
+    comment: [{ type: Types.ObjectId, ref: "Comment" }],
     tags: [{ type: Schema.Types.ObjectId, ref: "User" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },

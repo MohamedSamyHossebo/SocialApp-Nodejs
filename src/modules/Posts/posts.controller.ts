@@ -7,7 +7,10 @@ import {
 import { TokenTypeEnum, UserRole } from "../../utils/enums/User.enums";
 import * as postValidation from "./posts.validation";
 import { validation } from "../../middlewares/Auth/validation.middleware";
+import { commentsRouter } from "../Comments";
 const router: Router = Router();
+router.use("/:postId/comment", commentsRouter);
+
 router.post(
   "/",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
@@ -15,22 +18,25 @@ router.post(
   validation(postValidation.createPostSchema),
   PostsService.createPost,
 );
-router.get("/",
+router.get(
+  "/",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
-  PostsService.getAllPosts
+  PostsService.getAllPosts,
 );
-router.get("/my-posts",
+router.get(
+  "/my-posts",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
-  PostsService.getMyPosts
+  PostsService.getMyPosts,
 );
-router.patch('/update/:postId',
+router.patch(
+  "/update/:postId",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
   validation(postValidation.updatePostSchema),
-  PostsService.updatePost
-)
+  PostsService.updatePost,
+);
 router.patch(
   "/:postId/react",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
@@ -38,10 +44,11 @@ router.patch(
   validation(postValidation.reactToPostSchema),
   PostsService.react,
 );
-router.patch("/soft-delete/:postId",
+router.patch(
+  "/soft-delete/:postId",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
-  PostsService.deletePost
+  PostsService.deletePost,
 );
 
 export default router;

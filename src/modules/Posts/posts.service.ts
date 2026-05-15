@@ -206,6 +206,7 @@ class PostsService {
       options: {
         populate: [
           { path: "createdBy", select: "firstName lastName email" },
+          { path: "comment" },
           { path: "tags", select: "firstName lastName email" },
         ],
       },
@@ -229,6 +230,7 @@ class PostsService {
       options: {
         populate: [
           { path: "tags", select: "firstName lastName email" },
+          { path: "comment" },
         ],
       },
     });

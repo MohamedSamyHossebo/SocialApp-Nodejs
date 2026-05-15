@@ -2,7 +2,7 @@ import express from "express";
 import { Express, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { authRouter, commentsRouter, postsRouter, userRouter } from "./modules";
+import { authRouter, postsRouter, userRouter } from "./modules";
 import connectDB from "./DB/connection.db";
 import { PORT } from "./config/config.service";
 import {
@@ -27,7 +27,6 @@ export const bootstrap = async () => {
   });
 
   app.use("/auth", authRouter);
-  app.use("/comments", commentsRouter);
   app.use("/posts", postsRouter);
   app.use("/user", userRouter);
 
