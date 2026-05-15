@@ -15,4 +15,11 @@ router.post(
   validation(postValidation.createPostSchema),
   PostsService.createPost,
 );
+router.patch(
+  "/:postId/react",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  validation(postValidation.reactToPostSchema),
+  PostsService.react,
+);
 export default router;

@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
-import { CreatePostDTO } from "./posts.dto";
+import {
+  CreatePostDTO,
+  ReactParamsToPostDTO,
+  ReactQueryParamToPostDTO,
+} from "./posts.dto";
 import { UserRepository } from "../../DB/repositories/user.repository";
-import { UserModel } from "../../DB/models/user/User.model";
+import { HUserDocument, UserModel } from "../../DB/models/user/User.model";
 import { PostRepository } from "../../DB/repositories/post.repository";
 import { PostsModel } from "../../DB/models/post/Posts.model";
 import { NotificationService } from "../../utils/services/notification.service";
@@ -9,7 +13,22 @@ import { NotFoundException } from "../../middlewares/Error/ErrorHandler.middlewa
 import { Types } from "mongoose";
 import { getFCM } from "../../DB/redis.service";
 import { success } from "zod";
+import { AvailabiltiesEnum } from "../../utils/enums/Post.enums";
 
+export const getAvailability = (user: HUserDocument) => {
+  return [
+    {
+      availability: AvailabiltiesEnum.PUBLIC,
+    },
+    {
+      availability: AvailabiltiesEnum.ONLY_ME,
+      createdBy: user._id,
+    },
+    {
+      tags: { $in: [user._id] },
+    },
+  ];
+};
 class PostsService {
   private readonly _userRepo = new UserRepository(UserModel);
   private readonly _postRepo = new PostRepository(PostsModel);
@@ -77,6 +96,28 @@ class PostsService {
       statusCode: 200,
       data: populatedPosts,
       message: "Post created successfully",
+    });
+  };
+
+  react = async (req: Request, res: Response): Promise<Response> => {
+    const { postId } = req.params;
+    const { react } = req.query;
+
+    const post = await this._postRepo.findOneAndUpdate({
+      filter: { _id: postId, $or: getAvailability(req.user) },
+      update: {
+        ...(Number(react) > 0
+          ? { $addToSet: { likes: req.user._id } }
+          : { $pull: { likes: req.user._id } }),
+      },
+    });
+    if (!post) {
+      throw new NotFoundException("Post not found");
+    }
+    return res.success({
+      statusCode: 200,
+      data: post,
+      message: "Reacted to post successfully",
     });
   };
 }

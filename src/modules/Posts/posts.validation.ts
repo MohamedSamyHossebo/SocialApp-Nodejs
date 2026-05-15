@@ -1,4 +1,7 @@
-import { AvailabiltiesEnum } from "./../../utils/enums/Post.enums";
+import {
+  AvailabiltiesEnum,
+  ReactionsEnum,
+} from "./../../utils/enums/Post.enums";
 import z from "zod";
 import { generalFields } from "../../middlewares/Auth/validation.middleware";
 import { Types } from "mongoose";
@@ -48,4 +51,12 @@ export const createPostSchema = {
         }
       }
     }),
+};
+export const reactToPostSchema = {
+  params: z.strictObject({
+    postId: generalFields.id,
+  }),
+  query: z.strictObject({
+    react: z.coerce.number().default(ReactionsEnum.LIKE),
+  }),
 };

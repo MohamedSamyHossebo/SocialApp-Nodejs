@@ -65,7 +65,24 @@ export abstract class DataBaseRepository<TDocument> {
     }
     return await doc.exec();
   }
-
+  async findOneAndUpdate({
+    filter,
+    update,
+    options = { new: true },
+  }: {
+    filter: QueryFilter<TDocument>;
+    update: UpdateQuery<TDocument>;
+    options?: QueryOptions<TDocument> | null;
+  }): Promise<HydratedDocument<TDocument> | null> {
+    if (Array.isArray(update)) {
+      update.push({ $set: { __v: { $add: ["$__v", 1] } } });
+      return await this.model.findOneAndUpdate(filter, update, { ...options });
+    }
+    return await this.model.findOneAndUpdate(filter, update, {
+      ...options,
+      $inc: { __v: 1 },
+    });
+  }
   async create({
     data,
     options,
