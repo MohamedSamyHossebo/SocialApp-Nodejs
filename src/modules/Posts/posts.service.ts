@@ -222,6 +222,28 @@ class PostsService {
       message: "Posts retrieved successfully",
     });
   };
+  getMyPosts = async (req: Request, res: Response): Promise<Response> => {
+    const user = req.user;
+    const posts = await this._postRepo.find({
+      filter: { createdBy: user._id },
+      options: {
+        populate: [
+          { path: "tags", select: "firstName lastName email" },
+        ],
+      },
+    });
+    return res.success({
+      statusCode: 200,
+      data: {
+        posts,
+        enums: {
+          availability: AvailabilityOptions,
+          reactions: ReactionOptions,
+        },
+      },
+      message: "My posts retrieved successfully",
+    });
+  };
   react = async (req: Request, res: Response): Promise<Response> => {
     const { postId } = req.params;
     const reactionValue = Number(req.query.react);

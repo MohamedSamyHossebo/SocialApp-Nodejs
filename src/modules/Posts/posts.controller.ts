@@ -20,6 +20,11 @@ router.get("/",
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
   PostsService.getAllPosts
 );
+router.get("/my-posts",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  PostsService.getMyPosts
+);
 router.patch('/update/:postId',
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
