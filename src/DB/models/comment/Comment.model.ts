@@ -6,6 +6,7 @@ export interface IComment {
   content: string;
   attachements?: string[];
   postId: Types.ObjectId;
+  commentId?: Types.ObjectId;
   tags?: Types.ObjectId[];
   reactions?: { user: Types.ObjectId | IUser; type: number }[];
   AvailabaleReactions?: ReactionsEnum[];
@@ -21,7 +22,8 @@ const CommentSchema = new Schema<IComment>(
   {
     content: { type: String, required: true },
     attachements: [{ type: String }],
-    postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
+    postId: { type: Schema.Types.ObjectId, ref: "Posts", required: true },
+    commentId: { type: Schema.Types.ObjectId, ref: "Comment" },
     tags: [{ type: Schema.Types.ObjectId, ref: "User" }],
     reactions: [
       {
@@ -40,5 +42,11 @@ const CommentSchema = new Schema<IComment>(
     toObject: { virtuals: true },
   },
 );
+
+CommentSchema.virtual("replies", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "commentId",
+});
 
 export const CommentModel = model<IComment>("Comment", CommentSchema);

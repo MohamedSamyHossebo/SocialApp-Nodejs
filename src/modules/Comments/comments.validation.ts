@@ -19,3 +19,10 @@ export const createCommentSchema = {
       }
     }),
 };
+export const replyCommentSchema = {
+  params: z.strictObject({
+    commentId: generalFields.id,
+    postId: generalFields.id,
+  }),
+  body: createCommentSchema.body,
+};

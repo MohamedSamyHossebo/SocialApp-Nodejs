@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
-import { CreateCommentDTO } from "./comments.dto";
+import { CreateCommentDTO, ReplyCommentDTO } from "./comments.dto";
 import { UserRepository } from "../../DB/repositories/user.repository";
 import { CommentModel } from "../../DB/models/comment/Comment.model";
-import { PostsModel } from "../../DB/models/post/Posts.model";
+import { IPosts, PostsModel } from "../../DB/models/post/Posts.model";
 import { UserModel } from "../../DB/models/user/User.model";
 import { PostRepository } from "../../DB/repositories/post.repository";
 import { NotificationService } from "../../utils/services/notification.service";
 import { CommentRepository } from "../../DB/repositories/comment.repository";
 import { getAvailability } from "../Posts/posts.service";
 import { NotFoundException } from "../../middlewares/Error/ErrorHandler.middleware";
-import { Types } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 import { getFCM } from "../../DB/redis.service";
 import {
   AvailabilityOptions,
@@ -112,11 +112,18 @@ class CommentsService {
   ): Promise<Response> => {
     const { postId } = req.params as { postId: string };
     const comments = await this._commentRepo.find({
-      filter: { postId },
+      filter: { postId, commentId: { $exists: false }, deletedAt: { $exists: false } },
       options: {
         populate: [
-          { path: "createdBy", select: "firstName lastName email " },
+          { path: "createdBy", select: "firstName lastName email" },
           { path: "tags", select: "firstName lastName email" },
+          {
+            path: "replies",
+            populate: [
+              { path: "createdBy", select: "firstName lastName email" },
+              { path: "tags", select: "firstName lastName email" },
+            ],
+          },
         ],
       },
     });
@@ -131,6 +138,7 @@ class CommentsService {
       },
     });
   };
+
   updateComment = async (req: Request, res: Response): Promise<Response> => {
     const { commentId } = req.params as { commentId: string };
     const { content, tags = [] }: CreateCommentDTO = req.body;
@@ -162,6 +170,7 @@ class CommentsService {
       },
     });
   };
+
   deleteComment = async (req: Request, res: Response): Promise<Response> => {
     const { commentId } = req.params as { commentId: string };
 
@@ -183,6 +192,7 @@ class CommentsService {
       },
     });
   };
+
   reactToComment = async (req: Request, res: Response): Promise<Response> => {
     const { commentId } = req.params;
     const reactionValue = Number(req.query.react);
@@ -222,6 +232,76 @@ class CommentsService {
           reactions: ReactionOptions,
         },
       },
+    });
+  };
+  replyComment = async (req: Request, res: Response): Promise<Response> => {
+    const { commentId, postId } = req.params as {
+      commentId: string;
+      postId: string;
+    };
+    const { content, tags = [] }: ReplyCommentDTO = req.body;
+
+    const comment = await this._commentRepo.findOne({
+      filter: { _id: commentId, postId },
+      options: {
+        populate: [
+          { path: "postId", match: { $or: getAvailability(req.user) } },
+        ],
+      },
+    });
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+    const mentions: Types.ObjectId[] = [];
+    const FCM_TOKENS: string[] = [];
+    if (tags.length) {
+      const mentionedUsers = await this._userRepo.find({
+        filter: { _id: { $in: tags } },
+      });
+      if (mentionedUsers.length !== tags.length) {
+        throw new NotFoundException("One or more mentioned users not found");
+      }
+      for (const tag of tags) {
+        mentions.push(new Types.ObjectId(tag));
+        const tagged = await getFCM(tag);
+        tagged.map((token: string) => {
+          if (token) FCM_TOKENS.push(token);
+        });
+      }
+    }
+
+    const replyData: any = {
+      createdBy: req.user._id,
+      content: content as string,
+      postId: comment.postId,
+      commentId: comment._id,
+    };
+    if (mentions.length) {
+      replyData.tags = mentions;
+    }
+
+    const [reply] =
+      (await this._commentRepo.create({
+        data: [replyData],
+      })) || [];
+
+    if (reply && FCM_TOKENS.length) {
+      await this._notificationService.sendNotfications({
+        tokens: FCM_TOKENS,
+        data: {
+          title: "You were mentioned in a reply",
+          body: JSON.stringify({
+            message: `${req.user.firstName} ${req.user.lastName} mentioned you in a reply`,
+            reply: reply._id.toString(),
+          }),
+        },
+      });
+    }
+
+    return res.success({
+      statusCode: 200,
+      message: "Reply created successfully",
+      data: reply,
     });
   };
 }
