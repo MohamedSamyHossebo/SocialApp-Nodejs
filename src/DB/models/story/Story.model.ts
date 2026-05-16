@@ -30,7 +30,7 @@ const StorySchema = new Schema<IStory>(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 StorySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
