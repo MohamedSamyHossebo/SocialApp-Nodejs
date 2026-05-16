@@ -23,7 +23,7 @@ const StorySchema = new Schema<IStory>(
     expiresAt: {
       type: Date,
       required: true,
-      default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to 24 hours from now
+      default: () => new Date(Date.now() + 24 * 60 * 60 * 1000),
     },
   },
   {
@@ -33,7 +33,6 @@ const StorySchema = new Schema<IStory>(
   }
 );
 
-// This tells MongoDB to delete the document automatically when the current time > expiresAt
 StorySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const StoryModel = model<IStory>("Story", StorySchema);
