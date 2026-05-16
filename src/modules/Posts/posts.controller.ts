@@ -8,6 +8,7 @@ import { TokenTypeEnum, UserRole } from "../../utils/enums/User.enums";
 import * as postValidation from "./posts.validation";
 import { validation } from "../../middlewares/Auth/validation.middleware";
 import { commentsRouter } from "../Comments";
+import postsService from "./posts.service";
 const router: Router = Router();
 router.use("/:postId/comment", commentsRouter);
 
@@ -50,5 +51,10 @@ router.patch(
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
   PostsService.deletePost,
 );
-
+router.delete(
+  "/hard-delete/:postId",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  postsService.hardDeletePost
+);
 export default router;

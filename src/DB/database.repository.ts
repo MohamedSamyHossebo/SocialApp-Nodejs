@@ -12,7 +12,9 @@ import {
 } from "mongoose";
 
 type QueryOptionsWithPopulate<TDocument> =
-  | (QueryOptions<TDocument> & { populate?: PopulateOptions | PopulateOptions[] })
+  | (QueryOptions<TDocument> & {
+      populate?: PopulateOptions | PopulateOptions[];
+    })
   | undefined;
 
 export abstract class DataBaseRepository<TDocument> {
@@ -86,6 +88,15 @@ export abstract class DataBaseRepository<TDocument> {
       ...options,
       $inc: { __v: 1 },
     });
+  }
+  async findOneAndDelete({
+    filter,
+    options,
+  }: {
+    filter: QueryFilter<TDocument>;
+    options?: QueryOptionsWithPopulate<TDocument> | null;
+  }) {
+    return await this.model.findOneAndDelete(filter, options);
   }
   async create({
     data,

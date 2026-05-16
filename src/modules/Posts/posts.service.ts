@@ -199,6 +199,30 @@ class PostsService {
       },
     });
   };
+  
+  hardDeletePost = async (req: Request, res: Response): Promise<Response> => {
+    const { postId } = req.params;
+    const deletedPost = await this._postRepo.findOneAndDelete({
+      filter: {
+        _id: postId,
+        createdBy: req.user._id,
+      },
+      options: {
+        new: true,
+      },
+    });
+    if (!deletedPost) {
+      throw new NotFoundException("Post not found");
+    }
+    return res.success({
+      statusCode: 200,
+      message: "Post deleted successfully",
+      data: {
+        post: deletedPost,
+      },
+    });
+  };
+
   getAllPosts = async (req: Request, res: Response): Promise<Response> => {
     const user = req.user;
     const posts = await this._postRepo.find({

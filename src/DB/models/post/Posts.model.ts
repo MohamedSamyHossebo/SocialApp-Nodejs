@@ -55,5 +55,8 @@ const PostsShema = new Schema<IPosts>(
     toObject: { virtuals: true },
   },
 );
-
+PostsShema.pre("findOneAndDelete", async function () {
+  const postIdToDelete = this.getQuery()._id;
+  await model("Comment").deleteMany({ postId: postIdToDelete });
+});
 export const PostsModel = model<IPosts>("Posts", PostsShema);

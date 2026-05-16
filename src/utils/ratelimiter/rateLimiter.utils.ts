@@ -11,7 +11,7 @@ const blockedIPs:Set<string>=new Set();
 
 const unblockTimer:Map<string,NodeJS.Timeout>= new Map();
 
-const RATE_LIMIT=10;
+const RATE_LIMIT=20;
 
 const WINDOW = 5 * 60 * 1000;
 
