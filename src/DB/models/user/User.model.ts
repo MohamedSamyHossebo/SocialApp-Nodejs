@@ -27,6 +27,7 @@ export interface IUser {
   changeCredentialsTime?: Date;
   profilePic?: string;
   provider: number;
+  deletedAt?: Date;
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -64,6 +65,7 @@ export const UserSchema = new Schema<IUser>(
     resetPasswordOTP: String,
     phoneNumber: String,
     address: String,
+    deletedAt: Date,
     gender: {
       type: String,
       enum: Object.values(UserGender),
@@ -94,6 +96,17 @@ UserSchema.virtual("userName")
   .get(function () {
     return `${this.firstName} ${this.lastName}`;
   });
-
+UserSchema.pre(["updateOne", "findOneAndUpdate"], async function () {
+  const updateData: any = this.getUpdate();
+  const isBeingFrozen =
+    updateData.deletedAt || (updateData.$set && updateData.$set.deletedAt);
+  if (isBeingFrozen) {
+    const userId = this.getQuery()._id;
+    if (userId) {
+      await mongoose.model("Posts").deleteMany({ createdBy: userId });
+      await mongoose.model("Comment").deleteMany({ createdBy: userId });
+    }
+  }
+});
 export const UserModel = model<IUser>("User", UserSchema);
 export type HUserDocument = HydratedDocument<IUser>;
