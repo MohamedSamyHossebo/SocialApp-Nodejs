@@ -105,6 +105,7 @@ UserSchema.pre(["updateOne", "findOneAndUpdate"], async function () {
     if (userId) {
       await mongoose.model("Posts").deleteMany({ createdBy: userId });
       await mongoose.model("Comment").deleteMany({ createdBy: userId });
+      await mongoose.model("Story").deleteMany({ createdBy: userId });
     }
   }
 });

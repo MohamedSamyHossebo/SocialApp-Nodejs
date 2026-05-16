@@ -2,7 +2,7 @@ import express from "express";
 import { Express, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { authRouter, postsRouter, userRouter } from "./modules";
+import { authRouter, postsRouter, storiesRouter, userRouter } from "./modules";
 import connectDB from "./DB/connection.db";
 import { PORT } from "./config/config.service";
 import {
@@ -29,6 +29,7 @@ export const bootstrap = async () => {
   app.use("/auth", authRouter);
   app.use("/posts", postsRouter);
   app.use("/user", userRouter);
+  app.use("/stories", storiesRouter);
 
   app.use(globalErrorHandler);
   app.use("*dummy", (req: Request, res: Response): Response => {
