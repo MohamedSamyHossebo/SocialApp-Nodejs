@@ -51,6 +51,14 @@ router.patch(
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
   PostsService.deletePost,
 );
+
+router.patch(
+  "/restore-soft-delete/:postId",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  PostsService.restoreSoftDeletePost,
+);
+
 router.delete(
   "/hard-delete/:postId",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),

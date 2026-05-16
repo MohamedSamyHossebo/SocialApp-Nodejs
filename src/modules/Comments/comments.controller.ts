@@ -30,6 +30,18 @@ router.patch(
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
   CommentsService.deleteComment,
 );
+router.patch(
+  "/restore-soft-delete/:commentId",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  CommentsService.restoreSoftDeleteComment,
+);
+router.delete(
+  "/hard-delete/:commentId",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
+  CommentsService.hardDeleteComment,
+);
 router.patch('/:commentId/react',
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),

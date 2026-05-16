@@ -192,6 +192,48 @@ class CommentsService {
       },
     });
   };
+  restoreSoftDeleteComment = async (req: Request, res: Response): Promise<Response> => {
+    const { commentId } = req.params as { commentId: string };
+
+    const deletedComment = await this._commentRepo.findOneAndUpdate({
+      filter: { _id: commentId, createdBy: req.user._id },
+      update: { $unset:{deletedAt:1} },
+      options: { new: true },
+    });
+
+    if (!deletedComment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    return res.success({
+      statusCode: 200,
+      message: "Comment deleted successfully",
+      data: {
+        comment: deletedComment,
+      },
+    });
+  };
+  
+  hardDeleteComment = async (req: Request, res: Response): Promise<Response> => {
+    const { commentId } = req.params as { commentId: string };
+
+    const deletedComment = await this._commentRepo.findOneAndDelete({
+      filter: { _id: commentId, createdBy: req.user._id },
+      options: { new: true },
+    });
+
+    if (!deletedComment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    return res.success({
+      statusCode: 200,
+      message: "Comment deleted successfully",
+      data: {
+        comment: deletedComment,
+      },
+    });
+  };
 
   reactToComment = async (req: Request, res: Response): Promise<Response> => {
     const { commentId } = req.params;

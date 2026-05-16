@@ -199,7 +199,27 @@ class PostsService {
       },
     });
   };
-  
+  restoreSoftDeletePost = async (req:Request,res:Response):Promise<Response>=>{
+    const {postId} = req.params;
+    const deletedPost = await this._postRepo.findOneAndUpdate({
+      filter: {
+        _id: postId,
+        createdBy: req.user._id,
+      },
+      update: { $unset:{deletedAt:1}},
+      options: { new: true },
+    });
+    if (!deletedPost) {
+      throw new NotFoundException("Post not found");
+    }
+    return res.success({
+      statusCode: 200,
+      message: "Post restored successfully",
+      data: {
+        post: deletedPost,
+      },
+    });
+  }
   hardDeletePost = async (req: Request, res: Response): Promise<Response> => {
     const { postId } = req.params;
     const deletedPost = await this._postRepo.findOneAndDelete({
