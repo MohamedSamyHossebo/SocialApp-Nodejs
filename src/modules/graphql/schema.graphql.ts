@@ -1,8 +1,10 @@
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { userGqlSchema } from "../User/gql/user.shcema.gql";
+import { postGqlSchema } from "../Posts/gql/posts.shcema.gql";
 
 const queryFields = {
   ...userGqlSchema.registerQuery(),
+  ...postGqlSchema.registerQuery(),
 };
 
 const mutationFields = {

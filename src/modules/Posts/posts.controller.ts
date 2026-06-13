@@ -9,6 +9,8 @@ import * as postValidation from "./posts.validation";
 import { validation } from "../../middlewares/Auth/validation.middleware";
 import { commentsRouter } from "../Comments";
 import postsService from "./posts.service";
+import { schema } from "../graphql/schema.graphql";
+import { createHandler } from "graphql-http/lib/use/express";
 const router: Router = Router();
 router.use("/:postId/comment", commentsRouter);
 
@@ -19,11 +21,17 @@ router.post(
   validation(postValidation.createPostSchema),
   PostsService.createPost,
 );
-router.get(
-  "/",
+router.post(
+  "/graphql",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
-  PostsService.getAllPosts,
+  createHandler({
+    schema: schema,
+    context: (req: any) => ({
+      user: req.raw.user,
+      decodedToken: req.raw.decoded,
+    }),
+  }),
 );
 router.get(
   "/my-posts",
@@ -63,6 +71,6 @@ router.delete(
   "/hard-delete/:postId",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.ADMIN, UserRole.USER] }),
-  postsService.hardDeletePost
+  postsService.hardDeletePost,
 );
 export default router;
