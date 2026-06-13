@@ -13,7 +13,14 @@ import { globalSuccessHandler } from "./middlewares/Success/SucessHandler.middle
 import { corsOptions } from "./utils/cors/cors.utils";
 import { rateLimiter } from "./utils/ratelimiter/rateLimiter.utils";
 import connectRedis from "./DB/redis.connection.db";
-
+import { Server } from "socket.io";
+import { schema } from "./modules/graphql/index";
+import { createHandler } from "graphql-http/lib/use/express";
+import {
+  authentication,
+  authorization,
+} from "./middlewares/Auth/authentication.middleware";
+import { TokenTypeEnum, UserRole } from "./utils/enums/User.enums";
 export const bootstrap = async () => {
   const port: number | string = PORT;
   const app: Express = express();
@@ -26,6 +33,14 @@ export const bootstrap = async () => {
     return res.success({ message: "Hello, World!", statusCode: 200 });
   });
 
+  app.all(
+    "/graphql",
+    authentication({ tokenType: TokenTypeEnum.ACCESS }),
+    createHandler({
+      schema: schema,
+      context: (req) => ({ user: req.raw.user, decodedToken: req.raw.decoded }),
+    }),
+  );
   app.use("/auth", authRouter);
   app.use("/posts", postsRouter);
   app.use("/user", userRouter);
@@ -36,7 +51,14 @@ export const bootstrap = async () => {
     throw new NotFoundException("Route not found", {});
   });
 
-  app.listen(port, () => {
+  const httpServer = app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
+  });
+
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
   });
 };

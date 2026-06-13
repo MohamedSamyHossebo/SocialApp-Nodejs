@@ -12,12 +12,11 @@ import { UpdateProfileDTO } from "./user.dto";
 class UserService {
   private _userRepo = new UserRepository(UserModel);
   constructor() {}
-  getProfile = async (req: Request, res: Response) => {
-    return res.success({
-      statusCode: 200,
-      message: "Logged in Successfully",
-      data: req.user,
-    });
+  getProfile = async (user: any) => {
+    return {
+      message: "User Profile Fetch Successfully",
+      data: user,
+    };
   };
 
   updateProfile = async (req: Request, res: Response): Promise<Response> => {

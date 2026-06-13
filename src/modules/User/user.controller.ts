@@ -13,7 +13,16 @@ const router: Router = Router();
 router.get(
   "/profile",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
-  userService.getProfile,
+  // userService.getProfile,
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const data = await userService.getProfile(user);
+    return res.success({
+      statusCode: 200,
+      data: data,
+      message: "Done",
+    });
+  },
 );
 
 router.patch(
