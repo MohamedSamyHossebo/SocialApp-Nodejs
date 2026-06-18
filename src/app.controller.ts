@@ -22,6 +22,7 @@ import { TokenService } from "./utils/services/token";
 import { HUserDocument } from "./DB/models/user/User.model";
 import { JwtPayload } from "jsonwebtoken";
 import { initialize } from "./modules/gateway/gateway";
+import { chatRouter } from "./modules/Chat";
 export const bootstrap = async () => {
   const port: number | string = PORT;
   const app: Express = express();
@@ -47,7 +48,7 @@ export const bootstrap = async () => {
   app.use("/posts", postsRouter);
   app.use("/user", userRouter);
   app.use("/stories", storiesRouter);
-
+  app.use("/chat", chatRouter);
   app.use(globalErrorHandler);
   app.use("*dummy", (req: Request, res: Response): Response => {
     throw new NotFoundException("Route not found", {});

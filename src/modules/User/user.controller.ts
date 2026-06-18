@@ -9,7 +9,9 @@ import { userService } from "./user.service";
 import { validation } from "../../middlewares/Auth/validation.middleware";
 import { UpdateProfileSchema } from "./user.validation";
 import * as validators from "./user.validation";
+import { chatRouter } from "../Chat";
 const router: Router = Router();
+router.use("/:userId/chat", chatRouter);
 
 router.get(
   "/profile",
