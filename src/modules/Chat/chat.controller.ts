@@ -14,6 +14,6 @@ router.get(
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.USER, UserRole.ADMIN] }),
   validation(Validators.getChatSchema),
-  chatService.getAllChats,
+  chatService.getChat,
 );
 export default router;

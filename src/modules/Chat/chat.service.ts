@@ -12,7 +12,7 @@ export class ChatService {
   private _userModel = new UserRepository(UserModel);
   constructor() {}
   // APIS
-  getAllChats = async (req: Request, res: Response): Promise<Response> => {
+  getChat = async (req: Request, res: Response): Promise<Response> => {
     const { userId } = req.params as IGetChatDTO;
     const chat = await this._chatModel.findOne({
       filter: {
