@@ -19,11 +19,15 @@ import { createHandler } from "graphql-http/lib/use/express";
 import { authentication } from "./middlewares/Auth/authentication.middleware";
 import { TokenTypeEnum } from "./utils/enums/User.enums";
 import { TokenService } from "./utils/services/token";
+import { HUserDocument } from "./DB/models/user/User.model";
+import { JwtPayload } from "jsonwebtoken";
+import { initialize } from "./modules/gateway/gateway";
 export const bootstrap = async () => {
   const port: number | string = PORT;
   const app: Express = express();
   await connectDB();
   await connectRedis();
+
   app.use(express.json(), cors(corsOptions), helmet(), rateLimiter);
   app.use(globalSuccessHandler);
 
@@ -52,44 +56,5 @@ export const bootstrap = async () => {
   const httpServer = app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
-
-  const io = new Server(httpServer, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
-  });
-
-  const tokenService = new TokenService();
-  const connectedSockets = new Map<string, string>();
-  io.use(async (socket: Socket, next) => {
-    try {
-      // Check both Socket.io auth payload and standard HTTP headers
-      const authorization =
-        socket.handshake?.auth?.authorization ||
-        socket.handshake?.headers?.authorization;
-
-      const { user, decoded } = await tokenService.decodedToken({
-        authorization: authorization as string,
-        tokenType: TokenTypeEnum.ACCESS,
-      });
-      connectedSockets.set(user._id.toString(), socket.id);
-      console.log(user, decoded);
-
-      next();
-    } catch (error) {
-      next(new Error("Invlid Token Or Expired"));
-    }
-  });
-
-  io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.id}`);
-    console.log(connectedSockets);
-
-    socket.on("disconnect", () => {
-      console.log(connectedSockets.delete(socket.id));
-      console.log("connected Sockets =>", connectedSockets);
-      console.log(`User disconnected: ${socket.id}`);
-    });
-  });
+  await initialize(httpServer);
 };
