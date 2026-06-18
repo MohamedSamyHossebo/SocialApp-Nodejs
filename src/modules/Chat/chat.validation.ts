@@ -6,3 +6,16 @@ export const getChatSchema = {
     userId: generalFields.id,
   }),
 };
+
+export const createGroupChatSchema = {
+  body: z.strictObject({
+    group: z.string().min(1).max(100),
+    participants: z.array(generalFields.id).min(1),
+  }),
+};
+
+export const getChatByIdSchema = {
+  params: z.strictObject({
+    chatId: generalFields.id,
+  }),
+};

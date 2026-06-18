@@ -10,6 +10,29 @@ import chatService from "./chat.service";
 const router: Router = Router({ mergeParams: true });
 
 router.get(
+  "/history",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.USER, UserRole.ADMIN] }),
+  chatService.getUserChats,
+);
+
+router.post(
+  "/group",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.USER, UserRole.ADMIN] }),
+  validation(Validators.createGroupChatSchema),
+  chatService.createGroupChat,
+);
+
+router.get(
+  "/room/:chatId",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  authorization({ accessRoles: [UserRole.USER, UserRole.ADMIN] }),
+  validation(Validators.getChatByIdSchema),
+  chatService.getChatById,
+);
+
+router.get(
   "/",
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.USER, UserRole.ADMIN] }),

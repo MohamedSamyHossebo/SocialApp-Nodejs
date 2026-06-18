@@ -9,4 +9,16 @@ export class ChatEvents {
       this._chatService.sayHi({ message, socket, callback });
     });
   };
+
+  joinRoom = (socket: IAuthSocket) => {
+    return socket.on("joinRoom", (roomId) => {
+      this._chatService.joinRoom({ roomId, socket });
+    });
+  };
+
+  sendMessage = (socket: IAuthSocket) => {
+    return socket.on("sendMessage", ({ roomId, message }, callback) => {
+      this._chatService.sendMessage({ roomId, message, socket, callback });
+    });
+  };
 }

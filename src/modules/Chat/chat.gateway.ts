@@ -6,5 +6,7 @@ export class ChatGateWay {
   constructor() {}
   register = (socket: IAuthSocket) => {
     this._chatEvents.sayHi(socket);
+    this._chatEvents.joinRoom(socket);
+    this._chatEvents.sendMessage(socket);
   };
 }
