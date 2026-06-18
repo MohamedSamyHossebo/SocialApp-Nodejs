@@ -52,5 +52,11 @@ router.patch(
   validation(validators.acceptFriendRequestSchema),
   userService.acceptFrinedRqust,
 );
+router.delete(
+  "/friend-request/:requestId/reject",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  validation(validators.rejectFriendRequestSchema),
+  userService.rejectFriendRequest,
+);
 
 export default router;
