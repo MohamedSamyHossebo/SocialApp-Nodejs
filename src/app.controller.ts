@@ -13,14 +13,12 @@ import { globalSuccessHandler } from "./middlewares/Success/SucessHandler.middle
 import { corsOptions } from "./utils/cors/cors.utils";
 import { rateLimiter } from "./utils/ratelimiter/rateLimiter.utils";
 import connectRedis from "./DB/redis.connection.db";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { schema } from "./modules/graphql/index";
 import { createHandler } from "graphql-http/lib/use/express";
-import {
-  authentication,
-  authorization,
-} from "./middlewares/Auth/authentication.middleware";
-import { TokenTypeEnum, UserRole } from "./utils/enums/User.enums";
+import { authentication } from "./middlewares/Auth/authentication.middleware";
+import { TokenTypeEnum } from "./utils/enums/User.enums";
+import { TokenService } from "./utils/services/token";
 export const bootstrap = async () => {
   const port: number | string = PORT;
   const app: Express = express();
@@ -60,5 +58,38 @@ export const bootstrap = async () => {
       origin: "*",
       methods: ["GET", "POST"],
     },
+  });
+
+  const tokenService = new TokenService();
+  const connectedSockets = new Map<string, string>();
+  io.use(async (socket: Socket, next) => {
+    try {
+      // Check both Socket.io auth payload and standard HTTP headers
+      const authorization =
+        socket.handshake?.auth?.authorization ||
+        socket.handshake?.headers?.authorization;
+
+      const { user, decoded } = await tokenService.decodedToken({
+        authorization: authorization as string,
+        tokenType: TokenTypeEnum.ACCESS,
+      });
+      connectedSockets.set(user._id.toString(), socket.id);
+      console.log(user, decoded);
+
+      next();
+    } catch (error) {
+      next(new Error("Invlid Token Or Expired"));
+    }
+  });
+
+  io.on("connection", (socket) => {
+    console.log(`User connected: ${socket.id}`);
+    console.log(connectedSockets);
+
+    socket.on("disconnect", () => {
+      console.log(connectedSockets.delete(socket.id));
+      console.log("connected Sockets =>", connectedSockets);
+      console.log(`User disconnected: ${socket.id}`);
+    });
   });
 };

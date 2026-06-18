@@ -1,4 +1,4 @@
-import mongoose, { HydratedDocument, model, Schema } from "mongoose";
+import mongoose, { HydratedDocument, model, Schema, Types } from "mongoose";
 import {
   PROVIDER,
   UserGender,
@@ -28,6 +28,7 @@ export interface IUser {
   profilePic?: string;
   provider: number;
   deletedAt?: Date;
+  friendRequests?: Types.ObjectId[];
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -81,6 +82,12 @@ export const UserSchema = new Schema<IUser>(
       enum: Object.values(PROVIDER).filter((v) => typeof v === "number"),
       default: PROVIDER.SYSTEM,
     },
+    friendRequests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "FriendRequsts",
+      },
+    ],
   },
   {
     timestamps: true,

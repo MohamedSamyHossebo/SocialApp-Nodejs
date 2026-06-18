@@ -8,6 +8,7 @@ import { TokenTypeEnum, UserRole } from "../../utils/enums/User.enums";
 import { userService } from "./user.service";
 import { validation } from "../../middlewares/Auth/validation.middleware";
 import { UpdateProfileSchema } from "./user.validation";
+import * as validators from "./user.validation";
 const router: Router = Router();
 
 router.get(
@@ -38,6 +39,12 @@ router.patch(
   authentication({ tokenType: TokenTypeEnum.ACCESS }),
   authorization({ accessRoles: [UserRole.USER, UserRole.ADMIN] }),
   userService.toggleFreezeAccount,
+);
+router.post(
+  "/:userId/friend-request",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  validation(validators.sendFriendRequestSchema),
+  userService.createFriendRequest,
 );
 
 export default router;

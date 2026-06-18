@@ -30,3 +30,8 @@ export const UpdateProfileSchema = {
       }
     }),
 };
+export const sendFriendRequestSchema = {
+  params: z.strictObject({
+    userId: generalFields.id,
+  }),
+};

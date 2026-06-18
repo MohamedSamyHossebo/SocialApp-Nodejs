@@ -4,13 +4,18 @@ import { UserModel } from "../../DB/models/user/User.model";
 import { globalSuccessHandler } from "../../middlewares/Success/SucessHandler.middleware";
 import {
   BadRequestException,
+  ConflictException,
   NotFoundException,
 } from "../../middlewares/Error/ErrorHandler.middleware";
 import { generateHash } from "../../utils/security/hash";
 import { UpdateProfileDTO } from "./user.dto";
+import { Types } from "mongoose";
+import { FriendRequstsRepository } from "../../DB/repositories/friendRequest.repository";
+import { FriendRquestModel } from "../../DB/models/friendRequest/friendRequest.model";
 
 class UserService {
   private _userRepo = new UserRepository(UserModel);
+  private _fRequestRepo = new FriendRequstsRepository(FriendRquestModel);
   constructor() {}
   getProfile = async (user: any) => {
     return {
@@ -106,6 +111,45 @@ class UserService {
     return res.success({
       statusCode: 200,
       message: "Account frozen successfully",
+    });
+  };
+  createFriendRequest = async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    const { userId } = req.params as unknown as { userId: Types.ObjectId };
+    const checkFriendRequstExist = await this._fRequestRepo.findOne({
+      filter: {
+        createdBy: { $in: [req.user?._id, userId] },
+        sendTo: { $in: [req.user?._id, userId] },
+      },
+    });
+    if (checkFriendRequstExist)
+      throw new ConflictException("Friend Request Already Exists");
+    const checkUserExists = await this._userRepo.findOne({
+      filter: {
+        _id: userId,
+      },
+    });
+    if (!checkUserExists) throw new NotFoundException("User Not Found");
+    const [friend] =
+      (await this._fRequestRepo.create({
+        data: [
+          {
+            createdBy: req.user?._id as Types.ObjectId,
+            sendTo: userId,
+          },
+        ],
+      })) || [];
+    if (!friend) throw new BadRequestException("Fail to send frined request");
+    await this._userRepo.updateOne({
+      filter: { _id: userId },
+      update: { $push: { friendRequests: friend._id } },
+    });
+    return res.success({
+      statusCode: 200,
+      message: "Sent Friend Rquest Successfully",
+      data: friend,
     });
   };
 }
