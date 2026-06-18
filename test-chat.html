@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social App - Chat Tester</title>
+  <!-- Import Inter font for modern typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Import Socket.io client -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-end: #1e293b;
+      --surface: rgba(30, 41, 59, 0.7);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --message-sent: #6366f1;
+      --message-received: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      height: 85vh;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* Glassmorphism Panels */
+    .panel {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    h2 {
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    input, textarea {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* Chat Section */
+    .chat-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* Custom Scrollbar */
+    .messages-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .messages-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .messages-container::-webkit-scrollbar-thumb {
+      background: var(--surface-border);
+      border-radius: 10px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease;
+      word-wrap: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.sent {
+      background: var(--message-sent);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.received {
+      background: var(--message-received);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-meta {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 4px;
+      display: block;
+      text-align: right;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 12px;
+    }
+
+    .input-area input {
+      flex: 1;
+    }
+
+    /* Status indicator */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444; /* red for disconnected */
+      transition: background 0.3s;
+    }
+
+    .status-dot.connected {
+      background: #22c55e; /* green */
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Setup Panel -->
+    <div class="panel">
+      <div>
+        <h2>Socket Setup</h2>
+        <div class="status-badge" id="connectionStatus">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Disconnected</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Server URL</label>
+        <input type="text" id="serverUrl" value="http://localhost:3000" placeholder="http://localhost:3000">
+      </div>
+
+      <div class="form-group">
+        <label>Auth Token (Bearer)</label>
+        <textarea id="token" rows="3" placeholder="Paste your access token here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Room ID</label>
+        <input type="text" id="roomId" placeholder="60d5ecb...">
+      </div>
+
+      <button id="connectBtn" style="margin-top: auto;">Connect & Join Room</button>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="panel chat-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2>Active Chat</h2>
+        <span style="font-size: 0.8rem; color: var(--text-muted);" id="currentRoomText">Not joined</span>
+      </div>
+
+      <div class="messages-container" id="messagesList">
+        <!-- Messages will appear here -->
+        <div id="placeholderText" style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: auto; margin-bottom: auto;">
+          Messages will appear here...
+        </div>
+      </div>
+
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type a message..." disabled>
+        <button id="sendBtn" disabled>Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let socket = null;
+    let activeRoom = null;
+    let currentUserId = null;
+    let participantsMap = {};
+
+    // UI Elements
+    const serverUrlInput = document.getElementById('serverUrl');
+    const tokenInput = document.getElementById('token');
+    const roomIdInput = document.getElementById('roomId');
+    const connectBtn = document.getElementById('connectBtn');
+    
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const currentRoomText = document.getElementById('currentRoomText');
+    
+    const messagesList = document.getElementById('messagesList');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Utility to format time
+    const formatTime = () => {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    // Add message to UI
+    const appendMessage = (text, type, meta = 'Now', senderName = null) => {
+      // Clear placeholder if it exists
+      const placeholder = document.getElementById('placeholderText');
+      if (placeholder) {
+        placeholder.remove();
+      }
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${type}`;
+      
+      let nameHtml = '';
+      if (senderName && type === 'received') {
+         nameHtml = `<div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px; font-weight: 600;">${senderName}</div>`;
+      }
+      
+      msgDiv.innerHTML = `
+        ${nameHtml}
+        ${text}
+        <span class="message-meta">${meta}</span>
+      `;
+      messagesList.appendChild(msgDiv);
+      messagesList.scrollTop = messagesList.scrollHeight; // Auto-scroll
+    };
+
+    // Connect & Join logic
+    connectBtn.addEventListener('click', () => {
+      const url = serverUrlInput.value.trim();
+      let token = tokenInput.value.trim();
+      const roomId = roomIdInput.value.trim();
+
+      if (!url || !token || !roomId) {
+        alert("Please fill in Server URL, Token, and Room ID!");
+        return;
+      }
+
+      // If user forgot 'Bearer ', add it automatically for convenience
+      if (!token.toLowerCase().startsWith('bearer ')) {
+        token = `Bearer ${token}`;
+      }
+
+      // Disconnect existing socket if any
+      if (socket) {
+        socket.disconnect();
+      }
+
+      connectBtn.innerText = "Connecting...";
+      
+      // Initialize Socket
+      socket = io(url, {
+        auth: { authorization: token }, // Passing token in handshake
+        transports: ['websocket', 'polling']
+      });
+
+      // Socket Events
+      socket.on('connect', () => {
+        console.log('Connected to server');
+        statusDot.classList.add('connected');
+        statusText.innerText = "Connected";
+        connectBtn.innerText = "Re-connect";
+
+        // Join the room automatically
+        socket.emit('joinRoom', roomId);
+        activeRoom = roomId;
+        currentRoomText.innerText = `Room: ${roomId}`;
+        
+        // Enable chat inputs
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        
+        messagesList.innerHTML = '';
+        appendMessage('Connected and joined room. Fetching history...', 'received', formatTime());
+
+        // Parse JWT to get current user ID
+        const parseJwt = (t) => {
+          try { return JSON.parse(atob(t.split('.')[1])); } catch(e) { return null; }
+        };
+        const jwtPayload = parseJwt(token.replace('Bearer ', ''));
+        const currentUserId = jwtPayload ? (jwtPayload._id || jwtPayload.id) : null;
+
+        // Fetch History
+        fetch(`${url}/chat/room/${roomId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data && data.data.chat) {
+             const chat = data.data.chat;
+             if (chat.participants) {
+               chat.participants.forEach(p => {
+                 participantsMap[p._id] = p.userName || `${p.firstName} ${p.lastName}`;
+               });
+             }
+
+             if (chat.messages && chat.messages.length > 0) {
+               messagesList.innerHTML = ''; // clear initial connection message
+               chat.messages.forEach(msg => {
+                 const isSent = currentUserId && msg.createdBy === currentUserId;
+                 const type = isSent ? 'sent' : 'received';
+                 const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                 const senderName = isSent ? null : (participantsMap[msg.createdBy] || 'Unknown User');
+                 appendMessage(msg.content, type, time, senderName);
+               });
+               appendMessage('--- End of History ---', 'received', formatTime());
+             } else {
+               appendMessage('No previous messages in this room.', 'received', formatTime());
+             }
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch history", err);
+          appendMessage('Failed to load chat history.', 'received', formatTime());
+        });
+      });
+
+      socket.on('disconnect', () => {
+        statusDot.classList.remove('connected');
+        statusText.innerText = "Disconnected";
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        currentRoomText.innerText = `Not joined`;
+        appendMessage('Disconnected from server.', 'received', formatTime());
+      });
+
+      // Listen for incoming messages
+      socket.on('receiveMessage', (data) => {
+        console.log("New Message:", data);
+        if (data.roomId === activeRoom) {
+          const senderId = data.message.createdBy;
+          const isSent = currentUserId && senderId === currentUserId;
+          const type = isSent ? 'sent' : 'received';
+          const senderName = isSent ? null : (participantsMap[senderId] || 'New Message');
+          appendMessage(data.message.content, type, formatTime(), senderName);
+        }
+      });
+
+      // Listen for custom errors
+      socket.on('custom_error', (err) => {
+        console.error("Socket Error:", err);
+        alert(`Error: ${JSON.stringify(err)}`);
+      });
+      
+      socket.on('connect_error', (err) => {
+         console.error("Connection Error:", err);
+         alert(`Connection Error: ${err.message}`);
+         connectBtn.innerText = "Connect & Join Room";
+      });
+    });
+
+    // Send Message Logic
+    const sendMessage = () => {
+      const text = messageInput.value.trim();
+      if (!text || !socket || !activeRoom) return;
+
+      // Disable input while sending
+      messageInput.disabled = true;
+      sendBtn.disabled = true;
+
+      socket.emit('sendMessage', { roomId: activeRoom, message: text }, (ack) => {
+        // Callback executed
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        messageInput.value = '';
+        messageInput.focus();
+
+        if (ack && ack.success) {
+          appendMessage(text, 'sent', formatTime());
+        } else {
+          alert('Failed to send message');
+        }
+      });
+    };
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+  </script>
+</body>
+</html>

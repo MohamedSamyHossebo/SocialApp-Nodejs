@@ -110,7 +110,7 @@ export class ChatService {
 
     const chat = await this._chatModel.findOne({
       filter: {
-        _id: Types.ObjectId.createFromHexString(chatId),
+        roomId: chatId,
         participants: { $in: [userObjectId] },
       },
       options: {

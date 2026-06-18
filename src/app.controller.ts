@@ -29,7 +29,7 @@ export const bootstrap = async () => {
   await connectDB();
   await connectRedis();
 
-  app.use(express.json(), cors(corsOptions), helmet(), rateLimiter);
+  app.use(express.json(), cors(), helmet(), rateLimiter);
   app.use(globalSuccessHandler);
 
   app.get("/", (req: Request, res: Response) => {
