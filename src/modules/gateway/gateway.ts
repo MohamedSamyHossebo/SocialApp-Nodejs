@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { TokenTypeEnum } from "../../utils/enums/User.enums";
 import { TokenService } from "../../utils/services/token";
 import { IAuthSocket } from "./gateway.dto";
+import { ChatGateWay } from "../Chat/chat.gateway";
 
 export const initialize = async (httpServer: httpServer) => {
   const tokenService = new TokenService();
@@ -53,7 +54,9 @@ export const initialize = async (httpServer: httpServer) => {
       console.log("After Delete Connected Sockets", connectedSockets);
     });
   }
+  const chatGateway: ChatGateWay = new ChatGateWay();
   io.on("connection", (socket: IAuthSocket) => {
+    chatGateway.register(socket);
     disconnection(socket);
   });
 };
