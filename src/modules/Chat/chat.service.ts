@@ -34,7 +34,7 @@ export class ChatService {
         data: {
           participants: [userObjectId, targetUserId],
           createdBy: userObjectId,
-          roomId: new Types.ObjectId().toHexString(), // Will update this after save to use chat _id
+          roomId: new Types.ObjectId().toHexString(),
         }
       });
       chat = createdChats?.[0] || null;
