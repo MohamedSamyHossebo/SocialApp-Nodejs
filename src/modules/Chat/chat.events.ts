@@ -4,11 +4,11 @@ import { ChatService } from "./chat.service";
 export class ChatEvents {
   private _chatService = new ChatService();
   constructor() {}
-  sayHi = (socket: IAuthSocket) => {
-    return socket.on("sayHi", (message, callback) => {
-      this._chatService.sayHi({ message, socket, callback });
-    });
-  };
+  // sayHi = (socket: IAuthSocket) => {
+  //   return socket.on("sayHi", (message, callback) => {
+  //     this._chatService.sayHi({ message, socket, callback });
+  //   });
+  // };
 
   joinRoom = (socket: IAuthSocket) => {
     return socket.on("joinRoom", (roomId) => {
