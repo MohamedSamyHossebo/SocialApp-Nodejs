@@ -31,11 +31,11 @@ export class ChatService {
 
     if (!chat) {
       const createdChats = await this._chatModel.create({
-        data: {
+        data: [{
           participants: [userObjectId, targetUserId],
           createdBy: userObjectId,
           roomId: new Types.ObjectId().toHexString(),
-        }
+        }]
       });
       chat = createdChats?.[0] || null;
       if (chat) {
@@ -63,12 +63,12 @@ export class ChatService {
     }
 
     const createdChats = await this._chatModel.create({
-      data: {
+      data: [{
         participants: participantsIds,
         createdBy: userObjectId,
         group,
         roomId: new Types.ObjectId().toHexString(),
-      }
+      }]
     });
     
     const chat = createdChats?.[0];
