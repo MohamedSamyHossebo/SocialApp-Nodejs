@@ -152,6 +152,39 @@ class UserService {
       data: friend,
     });
   };
+  acceptFrinedRqust = async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    const { requestId } = req.params as unknown as { requestId: Types.ObjectId };
+
+    const friendRequest = await this._fRequestRepo.findOneAndUpdate({
+      filter: {
+        _id: requestId,
+        sendTo: req.user._id,
+        acceptedAt: { $exists: false }
+      },
+      update: {
+        $set: { acceptedAt: new Date() }
+      },
+      options: { new: true }
+    });
+
+    if (!friendRequest) {
+      throw new NotFoundException("Friend request not found or already accepted");
+    }
+
+    await this._userRepo.updateOne({
+      filter: { _id: req.user._id },
+      update: { $pull: { friendRequests: requestId } }
+    });
+
+    return res.success({
+      statusCode: 200,
+      message: "Accepted Friend Request Successfully",
+      data: friendRequest,
+    });
+  };
 }
 
 export const userService = new UserService();

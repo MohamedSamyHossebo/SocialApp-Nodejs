@@ -46,5 +46,11 @@ router.post(
   validation(validators.sendFriendRequestSchema),
   userService.createFriendRequest,
 );
+router.patch(
+  "/friend-request/:requestId/accept",
+  authentication({ tokenType: TokenTypeEnum.ACCESS }),
+  validation(validators.acceptFriendRequestSchema),
+  userService.acceptFrinedRqust,
+);
 
 export default router;
